@@ -1,0 +1,67 @@
+package com.example.classes;
+
+public class Clients extends LinkableElement {
+
+	private String name;
+
+	private String ipAddress;
+
+	private String subnetMask;
+
+	private String defaultGateway;
+
+	private Link link;
+
+	@Override
+	public String getName() {
+		return name;
+	}
+
+
+	public void setNames(String name) {
+		this.name = name;
+	}
+
+	public String getIpAddress() {
+		return ipAddress;
+	}
+
+	public void setIpAddress(String ipAddress) {
+		this.ipAddress = ipAddress;
+	}
+
+	public String getSubnetMask() {
+		return subnetMask;
+	}
+
+	public void setSubnetMask(String subnetMask) {
+		this.subnetMask = subnetMask;
+	}
+
+	public String getDefaultGateway() {
+		return defaultGateway;
+	}
+
+	public void setDefaultGateway(String defaultGateway) {
+		this.defaultGateway = defaultGateway;
+	}
+
+	public Link getLink() {
+		return link;
+	}
+
+	public void setLink(Link link) {
+		if(this.link!=null){
+			setNodeFalseInstances(this.link);
+			setNodeFalseInstances(link);
+			setNodeFalseInstances(this);
+			setErrorStatement("エラー:["+this.getName()+"]と[linkのインスタンス]の関連において、最大多重度を超えました。2個以上のオブジェクトを関連付けることはできません。");
+		}
+		this.link = link;
+	}
+
+//	@Override
+//	public void setLink(IInstancespecification_model instance) {
+//		this.setLink(instance);
+//	}
+}
