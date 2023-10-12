@@ -400,20 +400,7 @@ public class Check {
     /*dfsを実行するメソッド
     * instancesはすべてのインスタンス，vは始める場所*/
 
-    public static void dfsCheck (ArrayList<ClassElement> instances,int v){
-        ArrayList<Config> conf = new ArrayList<>();
-                for(ClassElement instance : instances){
-        if(instance instanceof  Config){
-            conf.add((Config) instance);
-        }
-    }
-    ArrayList<Integer> seen = new ArrayList<>(); //1=ture,0=false
-        for (int i=0 ; i<conf.size() ; i++){
-        seen.add(0);
-    }
-                Check.dfs(Check.graphChange(conf),seen,v);
 
-    }
 
     public static void dfsCheck (ArrayList<ClassElement> instances,Config config){
         ArrayList<Config> conf = new ArrayList<>();
@@ -436,9 +423,10 @@ public class Check {
 
     }
 
+    public static void test(){
 
-    //今日実装しなければいけないこと
-    //IPアドレスの重複
-    //VLANの重複
-    //変える前に実機で確かめないといけないことをはっきりさせる必要がある．
+    }
+
+
+
 }
