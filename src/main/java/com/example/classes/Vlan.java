@@ -4,7 +4,7 @@ import com.example.element.ClassElement;
 
 public class Vlan extends ClassElement {
 
-	private int num;
+	private int num = -1;
 
 	private String name;
 

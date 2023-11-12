@@ -9,7 +9,7 @@ public class IpRoute extends ClassElement
 
 	private String addressPrefix;
 
-	private String ipAddress;
+	private String netHopAddress;
 
 	public String getNetwork() {
 		return network;
@@ -27,12 +27,12 @@ public class IpRoute extends ClassElement
 		this.addressPrefix = addressPrefix;
 	}
 
-	public String getIpAddress() {
-		return ipAddress;
+	public String getNetHopAddress() {
+		return netHopAddress;
 	}
 
-	public void setIpAddress(String ipAddress) {
-		this.ipAddress = ipAddress;
+	public void setNetHopAddress(String ipAddress) {
+		this.netHopAddress = ipAddress;
 	}
 
 	public Config getConfig() {

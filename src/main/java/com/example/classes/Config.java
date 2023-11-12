@@ -27,6 +27,16 @@ public class Config extends ClassElement {
 
 	private ArrayList<Vlan> vlan ;
 
+	private Stack stack;
+
+	public Stack getStack() {
+		return stack;
+	}
+
+	public void setStack(Stack stack) {
+		this.stack = stack;
+	}
+
 	private ArrayList<EthernetSetting> ethernetSetting ;
 
 	private Hostname hostname = null;

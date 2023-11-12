@@ -4,13 +4,13 @@ import com.example.element.ClassElement;
 
 public class VlanSetting extends ClassElement {
 
-	private int vlanNum;
+	private int vlanNum = -1;
 
 	private String ipAddress;
 
 	private String subnetMask;
 
-	private int accessListNumber;
+	private int accessListNumber = -1;
 
 	private String accessListName;
 
@@ -18,7 +18,7 @@ public class VlanSetting extends ClassElement {
 
 	private boolean inNatInside;
 
-	private int ipTcpAdjustMss;
+	private int ipTcpAdjustMss = -1;
 
 	private boolean ipVirtualReassembly;
 

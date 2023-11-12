@@ -20,6 +20,15 @@ public class Link extends ClassElement {
 		return linkableElements;
 	}
 
+	//linkableElementがつながっているLinkableElementを見つけるための処理
+	public LinkableElement getAnotherLinkableElement(LinkableElement link1){
+		for(LinkableElement linked: this.getLinkableElement()){
+			if(linked!=link1){
+				return linked;
+			}
+		}
+		return null;
+	}
 
 	private ArrayList<LinkableElement> linkableElements = new ArrayList<>();
 

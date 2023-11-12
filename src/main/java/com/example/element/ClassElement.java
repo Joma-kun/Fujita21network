@@ -42,6 +42,7 @@ public class ClassElement {
     private ArrayList<ClassElement> nodeFalseInstances = new ArrayList<>();//関連線が多重度や関連先の情報を満たしていない物を格納してある。
 
     private ArrayList<String> errorStatements = new ArrayList<>();
+    private ArrayList<String> attributeErrorStatements = new ArrayList<>();
     private   ArrayList <ClassElement> link = new java.util.ArrayList<>();
 
     protected ArrayList<Slots> slots;
@@ -82,7 +83,18 @@ public class ClassElement {
         }
     }
 
+
     public ArrayList<String> getErrorStatement() {
         return errorStatements;
+    }
+    public void setAttributeErrorStatement(String errorStatement) {//turuとfalseの属性チェック（AttributeInterityCheckerで使う）
+        if(!attributeErrorStatements.contains(errorStatement)){
+            attributeErrorStatements.add(errorStatement);
+        }
+    }
+
+
+    public ArrayList<String> getAttributeErrorStatement() {//turuとfalseの属性チェック（AttributeInterityCheckerで使う）
+        return attributeErrorStatements;
     }
 }

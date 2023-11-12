@@ -18,6 +18,8 @@ public class LinkableElement extends ClassElement {
 		this.link = link;
 	}
 
+
+
 	private Link link;
 
 

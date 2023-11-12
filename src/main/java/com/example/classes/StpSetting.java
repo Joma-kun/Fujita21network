@@ -4,9 +4,9 @@ import com.example.element.ClassElement;
 
 public class StpSetting extends ClassElement {
 
-	private int bridgePriority;
+	private int bridgePriority = -1;
 
-	private int vlan;
+	private int vlan = -1;
 
 	public int getBridgePriority() {
 		return bridgePriority;
@@ -24,19 +24,19 @@ public class StpSetting extends ClassElement {
 		this.vlan = vlan;
 	}
 
-	public int getMode() {
+	public String getMode() {
 		return mode;
 	}
 
-	public void setMode(int mode) {
+	public void setMode(String mode) {
 		this.mode = mode;
 	}
 
-	public int getMacAddress() {
+	public String getMacAddress() {
 		return macAddress;
 	}
 
-	public void setMacAddress(int macAddress) {
+	public void setMacAddress(String macAddress) {
 		this.macAddress = macAddress;
 	}
 
@@ -54,9 +54,9 @@ public class StpSetting extends ClassElement {
 		this.config = config;
 	}
 
-	private int mode;
+	private String mode;
 
-	private int macAddress;
+	private String macAddress;
 
 	private Config config;
 

@@ -1,10 +1,38 @@
 package com.example.classes;
 
+import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.example.internal.ChangeClassInformation.isInt;
+
 public class EthernetSetting extends LinkableElement {
 
-	private int slot;
+	private int slot= -1;//int型の初期値は-1
 
-	private int port;
+	private EthernetType ethernetType;
+
+	public EthernetType getEthernetType() {
+		return ethernetType;
+	}
+
+
+	public void setEthernetType(EthernetType ethernetType) {
+		this.ethernetType = ethernetType;
+	}
+
+	public ArrayList<Integer> getAllowedVlans() {
+		return allowedVlans;
+	}
+
+	public void setAllowedVlans(ArrayList<Integer> allowedVlans) {
+		this.allowedVlans = allowedVlans;
+	}
+
+
+
+
+	private int port= -1;
 
 	private String ipAddress;
 
@@ -110,18 +138,35 @@ public class EthernetSetting extends LinkableElement {
 	public boolean isIpVirtualReassembly() {
 		return ipVirtualReassembly;
 	}
+	private ArrayList<Integer> allowedVlans = new ArrayList<>();
+
+	public void setAllowedVlan(String allowedVlan){
+		Pattern listNumber = Pattern.compile("\\[(\\d+(,\\d+)*)?\\]");//数字のリスト　[12,14]
+		Matcher allowedM = listNumber.matcher(allowedVlan);
+		if(!allowedM.matches()){
+			setAttributeErrorStatement(this.getName()+"のallowedVlanの値は無効です。正しい形式で入力してください");
+		}
+		if(allowedVlan.length()>2) {
+			String as =allowedVlan.substring(1, allowedVlan.length() - 2);
+			String[] spritVlan = as.split(",");
+			for (String s : spritVlan) {
+				if (isInt(s)) {
+					int number = Integer.parseInt(s);
+					this.allowedVlans.add(number);
+				}}
+			}
+		}
+
+
+
 
 	public void setIpVirtualReassembly(boolean ipVirtualReassembly) {
 		this.ipVirtualReassembly = ipVirtualReassembly;
 	}
 
-	public String getIpAccessGroup() {
-		return ipAccessGroup;
-	}
 
-	public void setIpAccessGroup(String ipAccessGroup) {
-		this.ipAccessGroup = ipAccessGroup;
-	}
+
+
 
 	public boolean isSwitchportTrunkEncapsulation() {
 		return switchportTrunkEncapsulation;
@@ -153,15 +198,16 @@ public class EthernetSetting extends LinkableElement {
 		}this.config = config;
 	}
 
-	private int accessVlan;
+	private int accessVlan= -1;
 
-	private int nativeVlan;
+	private int nativeVlan= -1;
 
 	private String mode;
 
-	private int accessListNumber;
+	private int accessListNumber= -1;
 
 	private String accessListName;
+
 
 	private String accessListInOrOut;
 
@@ -171,7 +217,15 @@ public class EthernetSetting extends LinkableElement {
 
 	private boolean ipVirtualReassembly;
 
-	private String ipAccessGroup;
+	public int getStack() {
+		return stack;
+	}
+
+	public void setStack(int stack) {
+		this.stack = stack;
+	}
+
+	private int stack = -1;
 
 	private boolean switchportTrunkEncapsulation;
 

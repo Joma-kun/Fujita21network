@@ -4,7 +4,7 @@ import com.example.element.ClassElement;
 
 public class OspfVirtualLink extends ClassElement {
 
-	private int areaId;
+	private int areaId = -1;
 
 	public int getAreaId() {
 		return areaId;

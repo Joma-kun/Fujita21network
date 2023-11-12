@@ -12,8 +12,8 @@ public class Clients extends LinkableElement {
 
 	private Link link;
 
-	@Override
-	public String getName() {
+
+	public String getName2() {
 		return name;
 	}
 
@@ -49,6 +49,7 @@ public class Clients extends LinkableElement {
 	public Link getLink() {
 		return link;
 	}
+
 
 	public void setLink(Link link) {
 		if(this.link!=null){

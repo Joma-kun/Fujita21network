@@ -8,7 +8,7 @@ public class OspfInterfaceSetting extends ClassElement {
 
 	private String wildcardMask;
 
-	private int areaId;
+	private int areaId = -1;
 
 	public String getIpAddress() {
 		return ipAddress;

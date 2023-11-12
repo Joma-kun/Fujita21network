@@ -6,11 +6,75 @@ import java.util.ArrayList;
 
 public class AccessList  extends ClassElement {
 
-	private int accessListNumber;//属性
+	private int accessListNumber = -1;//属性
 
 	private String permitOrDeny;//属性
 
-	private String accessListInfo;//属性
+	private String protocol;
+	private  String sorceIpAddress;
+	private  String sourceWildcardMask ;
+	private  String sourcePort;
+	private  String destIpAddress;
+
+	public String getProtocol() {
+		return protocol;
+	}
+
+	public void setProtocol(String protocol) {
+		this.protocol = protocol;
+	}
+
+	public String getSorceIpAddress() {
+		return sorceIpAddress;
+	}
+
+	public void setSorceIpAddress(String sorceIpAddress) {
+		this.sorceIpAddress = sorceIpAddress;
+	}
+
+	public String getSourceWildcardMask() {
+		return sourceWildcardMask;
+	}
+
+	public void setSourceWildcardMask(String sourceWildcardMask) {
+		this.sourceWildcardMask = sourceWildcardMask;
+	}
+
+	public String getSourcePort() {
+		return sourcePort;
+	}
+
+	public void setSourcePort(String sourcePort) {
+		this.sourcePort = sourcePort;
+	}
+
+	public String getDestIpAddress() {
+		return destIpAddress;
+	}
+
+	public void setDestIpAddress(String destIpAddress) {
+		this.destIpAddress = destIpAddress;
+	}
+
+	public String getDestWildcardMask() {
+		return destWildcardMask;
+	}
+
+	public void setDestWildcardMask(String destWildcardMask) {
+		this.destWildcardMask = destWildcardMask;
+	}
+
+	public String getDestPort() {
+		return destPort;
+	}
+
+	public void setDestPort(String destPort) {
+		this.destPort = destPort;
+	}
+
+	private  String destWildcardMask;
+
+	private String destPort;
 
 	private ArrayList<AccessList> accessLists = new ArrayList<>();//関連先のインスタンス
 
@@ -28,13 +92,9 @@ public class AccessList  extends ClassElement {
 		this.permitOrDeny = permitOrDeny;
 	}
 
-	public String getAccessListInfo() {
-		return accessListInfo;
-	}
 
-	public void setAccessListInfo(String accessListInfo) {
-		this.accessListInfo = accessListInfo;
-	}
+
+
 
 	public ArrayList<AccessList> getAccessList() {
 		return accessLists;
