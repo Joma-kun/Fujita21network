@@ -1,10 +1,15 @@
 package com.example.internal;
 
+import com.change_vision.jude.api.inf.exception.InvalidEditingException;
+import com.change_vision.jude.api.inf.exception.InvalidUsingException;
+import com.change_vision.jude.api.inf.model.IAttribute;
+import com.change_vision.jude.api.inf.model.IClass;
 import com.change_vision.jude.api.inf.model.IElement;
 import com.change_vision.jude.api.inf.model.ISlot;
 import com.change_vision.jude.api.inf.presentation.ILinkPresentation;
 import com.change_vision.jude.api.inf.presentation.INodePresentation;
 import com.change_vision.jude.api.inf.presentation.IPresentation;
+import com.change_vision.jude.api.inf.presentation.PresentationPropertyConstants;
 import com.example.classes.*;
 import com.example.element.ClassElement;
 import com.example.element.LinkElement;
@@ -23,10 +28,15 @@ public class ChangeClassInformation {
                 instances.add(instance);//自分たちのinstance仕様に変換しリストに追加する
             }
         }//instancesに情報を変換して入れていある状態（関連の情報は入っていない）
+
+
         for (IPresentation presentation :presentations){
             changeNodeInformation(presentation,instances);//関連の情報をインスタンスの情報に追加する
         }
+
         setLinkConfig(instances);
+        setallowedVlans(instances);
+
         return  instances;
     }
 
@@ -35,19 +45,20 @@ public class ChangeClassInformation {
         for(ClassElement instance : instances){
             if(instance instanceof Config){
                 ArrayList<EthernetSetting> ethernetSettings = ((Config) instance).getEthernetSetting();
-                for(EthernetSetting ethernetSetting : ethernetSettings){
+                for(EthernetSetting ethernetSetting : ethernetSettings) {
                     Link link = ethernetSetting.getLink();
                     EthernetSetting ethernetSettingTarget = null;
-                    for(LinkableElement linked : link.getLinkableElement()){
-                        if(linked != ethernetSetting){
-                            if(linked instanceof EthernetSetting){
-                                ethernetSettingTarget = (EthernetSetting) linked;
-                                Config conf = ethernetSettingTarget.getConfig();
-                                ((Config) instance).setLinkedConfigs(conf);
+                    if (link.getLinkableElement() != null){
+                        for (LinkableElement linked : link.getLinkableElement()) {
+                            if (linked != ethernetSetting) {
+                                if (linked instanceof EthernetSetting) {
+                                    ethernetSettingTarget = (EthernetSetting) linked;
+                                    Config conf = ethernetSettingTarget.getConfig();
+                                    ((Config) instance).setLinkedConfigs(conf);
+                                }
                             }
                         }
-                    }
-
+                }
                 }
 
             }
@@ -73,6 +84,19 @@ public class ChangeClassInformation {
     }
 
 
+    public  static void setallowedVlans(ArrayList<ClassElement> instances){
+        for(ClassElement instance: instances){
+            if(instance instanceof EthernetSetting){
+                ((EthernetSetting) instance).setConectedThing(((EthernetSetting) instance).getLink().getAnotherLinkableElement((LinkableElement) instance));
+            }}
+
+        for(ClassElement classElement: instances){
+            if(classElement instanceof EthernetSetting){
+                    ((EthernetSetting) classElement).setAllowedVlan(instances);
+//                    System.out.println(classElement.getName()+"  "+((EthernetSetting) classElement).getAllowedVlans());
+            }
+        }
+    }
     public static ClassElement changeInstanceInfomation(IPresentation nodepresentation) {//自分たちのinstance情報に変換するためのメソッド
         if (nodepresentation instanceof INodePresentation){//インスタンスの名前、スロットの処理
             IElement model = nodepresentation.getModel();
@@ -80,6 +104,7 @@ public class ChangeClassInformation {
                 com.change_vision.jude.api.inf.model.IInstanceSpecification instanceSpecification = (com.change_vision.jude.api.inf.model.IInstanceSpecification) model;
 
                 ClassElement instance = null;
+
 
                 ISlot[] slot = instanceSpecification.getAllSlots();//astahのインスタンスの属性値を取得してslotとする
                 ArrayList<Slots> slots = new ArrayList<>();//自プロジェクトのslotsを用意する
@@ -148,6 +173,7 @@ public class ChangeClassInformation {
                         }
                         if(cliName.equals("ipAddress")){
                             ((Clients) instance).setIpAddress(slots.get(slotnumber).getValue());
+
                         }
                         if(cliName.equals("subnetMask")){
                             ((Clients) instance).setSubnetMask(slots.get(slotnumber).getValue());
@@ -263,7 +289,8 @@ public class ChangeClassInformation {
 
                         }
                         if(ethName.equals("allowedVlan")){
-                            ((EthernetSetting) instance).setAllowedVlan(slots.get(e).getValue());
+                            ((EthernetSetting) instance).setAllowdVlanString(slots.get(e).getValue());
+
                         }
                         if (ethName.equals("stack")){
                             if (isInt(slots.get(e).getValue())) {
@@ -487,7 +514,7 @@ public class ChangeClassInformation {
                         }
                         if(vlsName.equals("inNatInside")){
                             ((VlanSetting) instance).setInNatInside(slots.get(slotnumber).getValue().equals("true"));
-                            if(!(slots.get(slotnumber).getValue()=="true" || slots.get(slotnumber).getValue()=="true" )){
+                            if(!(slots.get(slotnumber).getValue().equals("true") || slots.get(slotnumber).getValue().equals("false")  || slots.get(slotnumber).getValue().isEmpty())){
                                 instance.setAttributeErrorStatement(instance.getName()+"のinNatInsideの値は無効です。trueまたはfalseを入力してください");
                             }
                         }
@@ -501,14 +528,15 @@ public class ChangeClassInformation {
                         }
                         if(vlsName.equals("ipVirtualReassembly")){
                             ((VlanSetting) instance).setIpVirtualReassembly(slots.get(slotnumber).getValue().equals("true"));
-                            if(!(slots.get(slotnumber).getValue()=="true" || slots.get(slotnumber).getValue()=="true" )){
+                            if(!(slots.get(slotnumber).getValue().equals("true")|| slots.get(slotnumber).getValue().equals("false") || slots.get(slotnumber).getValue().isEmpty())){
                                 instance.setAttributeErrorStatement(instance.getName()+"ipVirtualReassemblyの値は無効です。trueまたはfalseを入力してください");
                             }
                         }
                         if(vlsName.equals("shutdown")){
                             ((VlanSetting) instance).setShutdown(slots.get(slotnumber).getValue().equals("true"));
-                            if(!(slots.get(slotnumber).getValue()=="true" || slots.get(slotnumber).getValue()=="true" )){
+                            if(!(slots.get(slotnumber).getValue().equals("true") || slots.get(slotnumber).getValue().equals("false")|| slots.get(slotnumber).getValue().isEmpty() )){
                                 instance.setAttributeErrorStatement(instance.getName()+"のshutdownの値は無効です。trueまたはfalseを入力してください");
+
                             }
                         }
                     }
@@ -522,26 +550,26 @@ public class ChangeClassInformation {
                         String ethName = slots.get(slotnumber).getAttribute();
                         if(ethName.equals("Ethernet")){
                             ((EthernetType) instance).setEthernet(slots.get(slotnumber).getValue().equals("true"));
-                            if(!(slots.get(slotnumber).getValue()=="true" || slots.get(slotnumber).getValue()=="true" )){
+                            if(!(slots.get(slotnumber).getValue().equals("true") || slots.get(slotnumber).getValue().equals("false") || slots.get(slotnumber).getValue().isEmpty())){
                                 instance.setAttributeErrorStatement(instance.getName()+"のEthernetの値は無効です。trueまたはfalseを入力してください");
                             }
                         }
                         if(ethName.equals("fastEthernet")){
                             ((EthernetType) instance).setFastEthernet(slots.get(slotnumber).getValue().equals("true"));
-                            if(!(slots.get(slotnumber).getValue()=="true" || slots.get(slotnumber).getValue()=="true" )){
+                            if(!(slots.get(slotnumber).getValue().equals("true") || slots.get(slotnumber).getValue().equals("false")|| slots.get(slotnumber).getValue().isEmpty() )){
                                 instance.setAttributeErrorStatement(instance.getName()+"のfastEthernetの値は無効です。trueまたはfalseを入力してください");
                             }
 
                         }
                         if(ethName.equals("gigabitEthernet")){
                             ((EthernetType) instance).setGigabitEthernet(slots.get(slotnumber).getValue().equals("true"));
-                            if(!(slots.get(slotnumber).getValue()=="true" || slots.get(slotnumber).getValue()=="true" )){
+                            if(!(slots.get(slotnumber).getValue().equals("true") || slots.get(slotnumber).getValue().equals("false") || slots.get(slotnumber).getValue().isEmpty())){
                                 instance.setAttributeErrorStatement(instance.getName()+"のgigabitEthernetの値は無効です。trueまたはfalseを入力してください");
                             }
                         }
                         if(ethName.equals("10gigabitEthernet")){
                             ((EthernetType) instance).setTengigabitEthernet(slots.get(slotnumber).getValue().equals("true"));
-                            if(!(slots.get(slotnumber).getValue()=="true" || slots.get(slotnumber).getValue()=="true" )){
+                            if(!(slots.get(slotnumber).getValue().equals("true") || slots.get(slotnumber).getValue().equals("false") || slots.get(slotnumber).getValue().isEmpty())){
                                 instance.setAttributeErrorStatement(instance.getName()+"の10gigabitEthernetの値は無効です。trueまたはfalseを入力してください");
                             }
                         }
@@ -570,6 +598,7 @@ public class ChangeClassInformation {
                                 instance.setAttributeErrorStatement(instance.getName()+"のpreviousStackNumber値は無効です。整数値を入力してください");
                             }
                         }
+
                         if(staName.equals("stackPriority")){
                             if(isInt(slots.get(slotnumber).getValue())){
                                 int number = Integer.parseInt(slots.get(slotnumber).getValue().trim());

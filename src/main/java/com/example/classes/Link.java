@@ -30,6 +30,7 @@ public class Link extends ClassElement {
 		return null;
 	}
 
+
 	private ArrayList<LinkableElement> linkableElements = new ArrayList<>();
 
 	public void setLinkableElement(LinkableElement linkableElement){

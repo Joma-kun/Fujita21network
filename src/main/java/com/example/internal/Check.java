@@ -5,12 +5,10 @@ import com.change_vision.jude.api.inf.presentation.PresentationPropertyConstants
 import com.example.classes.*;
 import com.example.element.ClassElement;
 import com.example.element.LinkElement;
-import com.sun.org.apache.xerces.internal.impl.xs.SchemaNamespaceSupport;
 
 
 import java.awt.*;
 import java.util.*;
-import java.util.List;
 import java.util.Stack;
 
 public class Check {
@@ -90,6 +88,8 @@ public class Check {
             throws InvalidEditingException {
         instance.getPresentation().setProperty(PresentationPropertyConstants.Key.FILL_COLOR,color);
     }
+
+
 
 
     /*astahでfalseノードを見つけて色を変えるためのメソッド
@@ -474,49 +474,204 @@ public class Check {
     /*vlanの重複をチェックするメソッド
     * 直接リンクがないのに同じVlan番号が振られている
     　異なるサブネットなのにおなじVlan がはいっている
+    * 反対側のEthernetSettingのVLAN番号とちがう
+    *
+    *
 */
     public static void vlanDuplicationCheck(TextArea textarea, ArrayList<ClassElement> instances) {//コンフィグが直接つながっていないのに同じVlan番号が振られている。
-        ArrayList<Vlan> vlanlists = new ArrayList<>(); //VLANの番号に対応したインスタンス
-        ArrayList<Integer> vlannumbers = new ArrayList<>(); //VLANの番号
+        ArrayList<EthernetSetting> vlanlists = new ArrayList<>(); //VLANの番号に対応したインスタンス
+        ArrayList<Integer> vlanNumbers = new ArrayList<>(); //VLANの番号
+        ArrayList<String> vlanWarningStatement = new ArrayList<>();
 
-        ArrayList<EthernetSetting> vlanEthlists = new ArrayList<>(); //VLANの番号に対応したインスタンス EthernetSetting
-        ArrayList<Integer> vlanEthNumbers = new ArrayList<>(); //VLANの番号 EthernetSetting
 
         for (ClassElement instance : instances) {
-            if (instance instanceof Vlan) {
-                vlanlists.add((Vlan) instance);
-                vlannumbers.add(((Vlan) instance).getNum());
-//                textarea.append(((Vlan) instance).getNum() + ",");
-            }
-            else if(instance instanceof EthernetSetting){
 
-                vlanEthNumbers.add(((EthernetSetting) instance).getAccessVlan());
+           if(instance instanceof EthernetSetting){
+               if(((EthernetSetting) instance).getMode().equals("access")) {
+                   vlanNumbers.add(((EthernetSetting) instance).getAccessVlan());
+                   vlanlists.add((EthernetSetting) instance);
+               }
+               else if(((EthernetSetting) instance).getMode().equals("trunk")){
+                   for(Integer vlan :((EthernetSetting) instance).getAllowedVlans()){
+                       vlanNumbers.add(vlan);
+                       vlanlists.add((EthernetSetting) instance);
+                   }
+               }
+               //conectedThingsの追加
+               ((EthernetSetting) instance).setConectedThing(((EthernetSetting) instance).getLink().getAnotherLinkableElement((LinkableElement) instance));
             }
         }
-        ArrayList<Integer> duplicationVlanNumber = new ArrayList<>();
-        ArrayList<Vlan> duplicationVlan = new ArrayList<>();
 
-//        for(int i = 0; i<vlannumbers.size();i++){
-        while (vlannumbers.size() != 0) {
-//            System.out.println("vlannumbers" + vlannumbers);
-            duplicationVlan.clear();
-            duplicationVlanNumber.clear();
-            int number = vlannumbers.get(0);
-//            System.out.println("number" + number);
-            for (int j = 0; j < vlannumbers.size(); j++) {
-                if (number == vlannumbers.get(j)) {
-                    duplicationVlanNumber.add(vlannumbers.get(j));
+        ArrayList<EthernetSetting> duplicationVlan = new ArrayList<>();//重複したVLAN番号
+
+
+        while (vlanNumbers.size() != 0) {
+
+            duplicationVlan.clear();//リセット
+            int number = vlanNumbers.get(0);//調べるVLAN番号
+
+            for (int j = 0; j < vlanNumbers.size(); j++) {//numberと一致するＶＬＡＮをぬきだして、調べた物は消す。
+                if (number == vlanNumbers.get(j)) {
                     duplicationVlan.add(vlanlists.get(j));
-                    vlannumbers.remove(j);
+                    vlanNumbers.remove(j);
                     vlanlists.remove(j);
                     j--;
                 }
             }
-            if (duplicationVlanNumber.size() != 0) {
-                //duplicationvlannumberとduplicationvlanに重複したvlanが格納されている
+            if (duplicationVlan.size() != 0) {
+
+
+                //duplicationvlanに重複したvlanが格納されている
+                //直接リンクがないのに同じVlan番号が振られている ここから-1
+                ArrayList<Config> conectedConfigList = new ArrayList<>(); //ひとまとまりのコンフィグリスト　結線でつながっている
+                ArrayList<Config> configList = new ArrayList<>(); //同じＶＬＡＮが割り当てられているコンフィグリスト
+                conectedConfigList.add(duplicationVlan.get(0).getConfig());
+                boolean check = true;
+                int count = 0;//conectedConfigListからどのconfigを選ぶか
+                int max = 1;//条件のためのもの
+                while(check){
+                    Config  config = conectedConfigList.get(count);//つながっているリストに入っているコンフィグ
+                    for(EthernetSetting eth : config.getEthernetSetting()) {//コンフィグのEthernetSettingのVLANを探して同じモノガアアルカ
+                        ArrayList<Integer> vlann = new ArrayList<>();
+                        if (eth.getMode().equals("access")) {
+                            vlann.add(eth.getAccessVlan());
+                        } else if (eth.getMode().equals("trunk")) {
+                            for (Integer vlan : eth.getAllowedVlans()) {
+                                vlann.add(vlan);
+                            }
+                        }
+                        if (vlann.contains(number)) {
+                            ArrayList<Integer> eth_vlans = new ArrayList<>();//EternetSettingの反対側のVLAN
+                            if (eth.getConectedThing() instanceof EthernetSetting) {//EthernetSettingのつながっている方(逆側)のVLAN番号を調べる
+                                if (((EthernetSetting) eth.getConectedThing()).getMode().equals("access")) {
+                                    eth_vlans.add(((EthernetSetting) eth.getConectedThing()).getAccessVlan());
+                                } else if (((EthernetSetting) eth.getConectedThing()).getMode().equals("trunk")) {
+                                    for (Integer vlan : ((EthernetSetting) eth.getConectedThing()).getAllowedVlans()) {
+                                        eth_vlans.add(vlan);
+                                    }
+                                }
+
+                                if (eth_vlans.contains(number)) {//同じVLANに所属して、直接リンクがある。
+                                    Config co = ((EthernetSetting) eth.getConectedThing()).getConfig(); //coと言う名前はこの三行でしか使わない一時的な名前
+                                    if (!conectedConfigList.contains(co)) {//重複している物がないとき
+                                        conectedConfigList.add(co);//つながっているリストに追加する
+                                        max++;
+                                    }
+
+                                } else {//対向のVLANといっちしないとき
+//                                    if(!vlanWarningStatement.contains(eth.getName() + "と" + eth.getConectedThing().getName() + "において異なるVLAN同士がつながれています") && !vlanWarningStatement.contains(eth.getConectedThing().getName() + "と" + eth.getName() + "において異なるVLAN同士がつながれています")) {
+//                                        vlanWarningStatement.add(eth.getName() + "と" + eth.getConectedThing().getName() + "において異なるVLAN同士がつながれています");
+//                                    }
+                                }
+
+                            }
+                        }
+                    }
+                        count++;
+                        if (max <= count) {
+                            check = false;
+                        }
+
+                }//ここまで
+
+
+
+                //ここから同じVLANを持っているコンフィグをリストにいれる
+                for(EthernetSetting vlaneth : duplicationVlan){
+                    Config config2 = new Config();
+                    config2 = vlaneth.getConfig();
+                    if(!configList.contains(config2)){
+                        configList.add(config2);
+                    }
+                }
+
+
+                //configListとconectedConfigListの比較(重複の確認)　ここから
+                for(Config sameConfig : configList){
+                    if(!conectedConfigList.contains(sameConfig)){
+                        if(!vlanWarningStatement.contains("VLAN"+number+"が重複している可能性があります")){
+                            vlanWarningStatement.add("VLAN"+number+"が重複している可能性があります");
+                        }
+                    }
+                }
+
+
+                //ここまで-1
+
+
 
             }
+        }
+        //ことなるサブネットなのに同じVLANがふられている。 ここから -2
+        ArrayList<VlanSetting> vlanSettings = new ArrayList<>();
+        int vlanNumber ;
 
+        for(ClassElement instance  : instances){
+            if(instance instanceof VlanSetting){
+                vlanSettings.add((VlanSetting) instance);
+            }
+        }
+        ArrayList<VlanSetting> duplicationVlanSettingNumber = new ArrayList<>();
+        while (vlanSettings.size() != 0) {
+            duplicationVlanSettingNumber.clear();
+            int number2 = vlanSettings.get(0).getVlanNum();
+            for (int j = 0; j < vlanSettings.size(); j++) {//numberと一致するＶＬＡＮをぬきだして、調べた物は消す。
+                if ( number2== vlanSettings.get(j).getVlanNum()) {
+                    duplicationVlanSettingNumber.add(vlanSettings.get(j));
+                    vlanSettings.remove(j);
+                    j--;
+                }
+            }
+
+            for (VlanSetting vlanSetting1 : duplicationVlanSettingNumber) {
+                for (VlanSetting vlanSetting2 : duplicationVlanSettingNumber) {
+                    String ipAddress1 = vlanSetting1.getIpAddress();
+                    String ipAddress2 = vlanSetting2.getIpAddress();
+                    String subnetMask1 = vlanSetting1.getSubnetMask();
+                    String subnetMask2 = vlanSetting2.getSubnetMask();
+                    if (!ipAddress1.isEmpty() && !ipAddress2.isEmpty() && !subnetMask1.isEmpty() && !subnetMask2.isEmpty()) {
+
+                        // IPアドレスとサブネットマスクをint配列に変換
+                        String[] ipParts1 = ipAddress1.split("\\.");
+                        String[] ipParts2 = ipAddress2.split("\\.");
+                        String[] maskParts1 = subnetMask1.split("\\.");
+                        String[] maskParts2 = subnetMask2.split("\\.");
+
+
+                        int[] ipInt1 = new int[4];
+                        int[] ipInt2 = new int[4];
+                        int[] maskInt1 = new int[4];
+                        int[] maskInt2 = new int[4];
+
+                        for (int i = 0; i < 4; i++) {
+
+
+                            ipInt1[i] = Integer.parseInt(ipParts1[i]);
+                            ipInt2[i] = Integer.parseInt(ipParts2[i]);
+
+                            maskInt1[i] = Integer.parseInt(maskParts1[i]);
+                            maskInt2[i] = Integer.parseInt(maskParts2[i]);
+                        }
+
+                        // IPアドレスとサブネットマスクのAND演算を行い、結果を比較
+                        boolean sameNetwork = true;
+                        for (int i = 0; i < 4; i++) {
+                            if ((ipInt1[i] & maskInt1[i]) != (ipInt2[i] & maskInt2[i])) {//and演算をした結果が異なったら違う
+                                sameNetwork = false;
+                                break;
+                            }
+                        }
+                        if (!sameNetwork) {//sameNetworkがfalseの時は違うネットワークに属している。
+                            if(!vlanWarningStatement.contains("VLAN" + number2 + "内で異なるネットワークアドレスが割り当てられています。")){
+                                vlanWarningStatement.add("VLAN" + number2 + "内で異なるネットワークアドレスが割り当てられています。");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        for(String warningStatemnt : vlanWarningStatement){
+            textarea.append(warningStatemnt + "\n");
         }
 
     }
@@ -682,8 +837,93 @@ public class Check {
         return rupeconfigs;
     }
 
+    //つながっているEthernetSettingのnativeVlanの確認
+    //EthernetSettingのmodeがtrunkの時、NativeVLANが設定されているかを確認する。
+    public static void  nativeCheck(ArrayList<ClassElement> instances, TextArea textArea){
+        ArrayList<String> nativevlanErrorStatement = new ArrayList<>();
+        ArrayList<String> nativevlanWarningStatement = new ArrayList<>();
+
+        for(ClassElement classElement : instances){
+            if(classElement instanceof EthernetSetting) {
+                EthernetSetting conectedEthernetSetting = null;//リンク先のEthernetSetting
+                int myNativeVlan = -1; //classElement側のNativeVLAN
+                int conectedNativeVlan = -1; //conectedEthernetSetting側のNativeVLAN
+                if (((EthernetSetting) classElement).getMode().equals("trunk")){
+
+                    if (((EthernetSetting) classElement).getNativeVlan() != -1) {
+                        myNativeVlan = ((EthernetSetting) classElement).getNativeVlan();
+                    }
+
+                if (((EthernetSetting) classElement).getConectedThing() instanceof EthernetSetting) {
+                    conectedEthernetSetting = (EthernetSetting) ((EthernetSetting) classElement).getConectedThing();//反対側のEthernetSettingインスタンス
+                    if (conectedEthernetSetting.getNativeVlan() != -1) {//nativeVLANが設定されているとき
+                        conectedNativeVlan = conectedEthernetSetting.getNativeVlan();
+                    }
+
+                    //myNativeVlanとconectedNativeVlanにVLAN番号が格納された状態
 
 
+                    //両方のmodeにトランクが入力され、NativeVLANが設定されていることを確かめる
+                    if (((EthernetSetting) classElement).getNativeVlan() == -1) {//ModeがtrunkなのにNativeVLANが設定されていない
+                        if (!nativevlanWarningStatement.contains(classElement.getName() + "のnativeVlanが設定されていません")) {
+                            nativevlanWarningStatement.add(classElement.getName() + "のnativeVlanが設定されていません");
+                            try {
+                                changeColor(classElement,orangered);
+                            } catch (InvalidEditingException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    }
+
+                    if (conectedEthernetSetting.getMode().equals("trunk") && conectedEthernetSetting.getNativeVlan() == -1) {//ModeがtrunkなのにNativeVLANが設定されていない
+                        if (!nativevlanWarningStatement.contains(conectedEthernetSetting.getName() + "のnativeVlanが設定されていません")) {
+                            nativevlanWarningStatement.add(conectedEthernetSetting.getName() + "のnativeVlanが設定されていません");
+                            try {
+                                changeColor(conectedEthernetSetting,orangered);
+                            } catch (InvalidEditingException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    }
+                    if (conectedEthernetSetting.getMode().equals("access") ) {//ModeがtrunkなのにNativeVLANが設定されていない
+                        if (!nativevlanWarningStatement.contains(classElement.getName()+"と"+conectedEthernetSetting.getName() + "のmodeが一致しません")) {
+                            nativevlanWarningStatement.add(classElement.getName()+"と"+conectedEthernetSetting.getName() + "のmodeが一致しません");
+                            try {
+                                changeColor(classElement,orangered);
+                                changeColor(conectedEthernetSetting,orangered);
+                            } catch (InvalidEditingException e) {
+                                throw new RuntimeException(e);
+                            }
+
+                        }
+                    }
+
+                    if (((EthernetSetting) classElement).getMode().equals("trunk") && conectedEthernetSetting.getMode().equals("trunk") && myNativeVlan != conectedNativeVlan) {
+                        if (!nativevlanErrorStatement.contains(classElement.getName() + "と" + conectedEthernetSetting.getName() + "のNativeVlanが一致していません") && !nativevlanErrorStatement.contains(conectedEthernetSetting.getName() + "と" + classElement.getName() + "のNativeVlanが一致していません")) {
+                            nativevlanErrorStatement.add(classElement.getName() + "と" + conectedEthernetSetting.getName() + "のNativeVlanが一致していません");
+                            try {
+                                changeColor(classElement,red);
+                                changeColor(conectedEthernetSetting,red);
+                            } catch (InvalidEditingException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+
+                    }
+
+                }
+            }
+            }
+        }
+
+        for(String eroorStatemnt : nativevlanErrorStatement){
+            textArea.append(eroorStatemnt+"\n");
+        }
+        for(String warnigStatemnt : nativevlanWarningStatement){
+            textArea.append(warnigStatemnt+"\n");
+        }
+
+    }
 
 
     /*dfsのための処理

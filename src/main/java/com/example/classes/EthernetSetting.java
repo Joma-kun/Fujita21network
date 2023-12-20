@@ -1,15 +1,28 @@
 package com.example.classes;
 
+import com.example.element.ClassElement;
+
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.example.internal.ChangeClassInformation.isInt;
+import static java.lang.Integer.parseInt;
 
 public class EthernetSetting extends LinkableElement {
 
 	private int slot= -1;//int型の初期値は-1
 
+	public ClassElement getConectedThing() {
+		return conectedThing;
+	}
+
+	public void setConectedThing(ClassElement conectedThing) {//接続先のEthernetSettingかClietのセット
+		this.conectedThing = conectedThing;
+	}
+
+	private ClassElement conectedThing ;//接続先のEthernetSettingかCliet
 	private EthernetType ethernetType;
 
 	public EthernetType getEthernetType() {
@@ -25,9 +38,7 @@ public class EthernetSetting extends LinkableElement {
 		return allowedVlans;
 	}
 
-	public void setAllowedVlans(ArrayList<Integer> allowedVlans) {
-		this.allowedVlans = allowedVlans;
-	}
+
 
 
 
@@ -36,6 +47,15 @@ public class EthernetSetting extends LinkableElement {
 
 	private String ipAddress;
 
+	public String getAllowdVlanString() {
+		return allowdVlanString;
+	}
+
+	public void setAllowdVlanString(String allowdVlanString) {
+		this.allowdVlanString = allowdVlanString;
+	}
+
+	private String allowdVlanString;
 	private String subnetMask;
 
 
@@ -140,21 +160,66 @@ public class EthernetSetting extends LinkableElement {
 	}
 	private ArrayList<Integer> allowedVlans = new ArrayList<>();
 
-	public void setAllowedVlan(String allowedVlan){
-		Pattern listNumber = Pattern.compile("\\[(\\d+(,\\d+)*)?\\]");//数字のリスト　[12,14]
-		Matcher allowedM = listNumber.matcher(allowedVlan);
-		if(!allowedM.matches()){
-			setAttributeErrorStatement(this.getName()+"のallowedVlanの値は無効です。正しい形式で入力してください");
-		}
-		if(allowedVlan.length()>2) {
-			String as =allowedVlan.substring(1, allowedVlan.length() - 2);
-			String[] spritVlan = as.split(",");
-			for (String s : spritVlan) {
-				if (isInt(s)) {
-					int number = Integer.parseInt(s);
-					this.allowedVlans.add(number);
-				}}
+	public void setAllowedVlan(ArrayList<ClassElement> instaces){
+		ArrayList<Integer> numbers = new ArrayList<>();
+		ArrayList<Integer> vlanNumbers = new ArrayList<>();
+		if(getAllowdVlanString().isEmpty()){
+			Config config = new Config();
+			config = this.getConfig();
+			if(config != null) {
+				ArrayList<Vlan> vlans = config.getVlan();
+				for (Vlan vlanNumber : vlans) {
+					if (!vlanNumbers.contains(vlanNumber.getNum())) {
+						vlanNumbers.add(vlanNumber.getNum());
+					}
+				}
+				this.allowedVlans = vlanNumbers;
 			}
+		}else{
+		String[] splits = getAllowdVlanString().split(",");
+		for(String string : splits){
+			if(string.matches("^[0-9]*$")){
+				numbers.add(parseInt(string));
+			}else if (string.matches("^[0-9]*-[0-9]*$")){
+				String[] splits2 = string.split("-");
+				for(int i= parseInt(splits2[0]); i<parseInt(splits2[1])+1;i++){
+					numbers.add(i);
+				}
+			}else{
+				setAttributeErrorStatement(this.getName()+"のallowedVlanの値は無効です。正しい形式で入力してください");
+			}
+			Config config = new Config();
+			config = this.getConfig();
+			if(config != null) {
+				ArrayList<Vlan> vlans = config.getVlan();
+				for (Vlan vlanNumber : vlans) {
+					if (numbers.contains(vlanNumber.getNum()) && !vlanNumbers.contains(vlanNumber.getNum())) {
+						vlanNumbers.add(vlanNumber.getNum());
+					}
+					if (numbers.contains(1) && !vlanNumbers.contains(1)) {
+						vlanNumbers.add(1);
+					}
+					this.allowedVlans = vlanNumbers;
+				}
+			}}
+		}
+
+
+//		Pattern listNumber = Pattern.compile("\\[(\\d+(,\\d+)*)?\\]");//数字のリスト　[12,14]
+//		Matcher allowedM = listNumber.matcher(allowedVlan);
+//		if(!allowedVlan.isEmpty()){
+//		if(!allowedM.matches()){
+//			setAttributeErrorStatement(this.getName()+"のallowedVlanの値は無効です。正しい形式で入力してください");
+//		}}
+//		if(allowedVlan.length()>2) {
+//			String as =allowedVlan.substring(1, allowedVlan.length() - 1);
+//			String[] spritVlan = as.split(",");
+//			for (String s : spritVlan) {
+//				if (isInt(s)) {
+//					int number = Integer.parseInt(s);
+//					this.allowedVlans.add(number);
+//				}}
+//			}
 		}
 
 

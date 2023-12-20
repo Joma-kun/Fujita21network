@@ -1,8 +1,10 @@
 package com.example.internal;
 
+import com.change_vision.jude.api.inf.exception.InvalidEditingException;
 import com.example.classes.*;
 import com.example.classes.Stack;
 import com.example.element.ClassElement;
+
 
 
 import java.awt.*;
@@ -14,12 +16,13 @@ public class AttributeIntegrityChecker {
     /*実装している物
      * 属性の正規表現、型（構文エラー）チェック
      * VLANとMODEの関係（抜け漏れ）チェック
-     *
+     *allowedVlan　accessVlan mode 対向のもの
      *
      * */
 
-
-
+    static String red = "#ff0000";//エラーの色
+    static String orangered = "#ff7f50";
+//104と108行目をオンにする
 
 
 
@@ -33,8 +36,10 @@ public class AttributeIntegrityChecker {
     /*チェックしている項目
      * EthernetSettingクラス
      * modeとaccessVlan,nativeVlanの関係（EthernetSettingChecK）*/
+//      * 対向のallowedVlancheck*/
     ArrayList<String> errorStatements;
     ArrayList<String> formatErrorStatements;
+    ArrayList<String> warningStatements;
     ArrayList<ClassElement> instances;
     TextArea textArea;
 
@@ -52,7 +57,7 @@ public class AttributeIntegrityChecker {
         this.textArea = textArea;
         errorStatements = new ArrayList<>();
         formatErrorStatements = new ArrayList<>();
-
+        warningStatements = new ArrayList<>();
     }
 
     public void AllAttributeIntegrityCheck() {
@@ -100,6 +105,15 @@ public class AttributeIntegrityChecker {
                 stackCheck((Stack) instance, errorStatements, formatErrorStatements);
             }
         }
+        try {
+            oposingVlancheck(instances,warningStatements);
+
+        } catch (InvalidEditingException e) {
+            throw new RuntimeException(e);
+        }
+        for (String warnigngStatement : warningStatements) {
+            textArea.append(warnigngStatement + "\n");
+        }
         for (String formatErrorstatement : formatErrorStatements) {
             textArea.append(formatErrorstatement + "\n");
         }
@@ -108,6 +122,49 @@ public class AttributeIntegrityChecker {
             textArea.append(errorstatement + "\n");
         }
     }
+
+    public static void oposingVlancheck(ArrayList<ClassElement> instances , ArrayList<String> warningStatements) throws InvalidEditingException {
+        for(ClassElement classElement : instances){
+            if(classElement instanceof EthernetSetting){
+                //allowedVlan
+                ArrayList<Integer> myallowedVlan = ((EthernetSetting) classElement).getAllowedVlans();
+                ArrayList<Integer> anotherallowedVlan = new ArrayList<>();
+
+
+               if( ((EthernetSetting) classElement).getConectedThing() instanceof  EthernetSetting){
+                   anotherallowedVlan = ((EthernetSetting) ((EthernetSetting) classElement).getConectedThing()).getAllowedVlans();
+               Collections.sort(myallowedVlan);
+               Collections.sort(anotherallowedVlan);
+
+               if(!myallowedVlan.equals(anotherallowedVlan)) {
+                   if(!warningStatements.contains(classElement.getName() + "と" + ((EthernetSetting) ((EthernetSetting) classElement).getConectedThing()).getName() + "のallowedVlanが一致しません") && !warningStatements.contains( ((EthernetSetting) ((EthernetSetting) classElement).getConectedThing()).getName()+ "と" + classElement.getName() + "のallowedVlanが一致しません")) {
+                       warningStatements.add(classElement.getName() + "と" + ((EthernetSetting) ((EthernetSetting) classElement).getConectedThing()).getName() + "のallowedVlanが一致しません");
+                   }
+                   Check.changeColor(classElement, orangered);
+                   Check.changeColor(((EthernetSetting) classElement).getConectedThing(), orangered);
+               }
+               }
+               System.out.println("my" +myallowedVlan +"another" + anotherallowedVlan);
+               //accessVlan
+               int myaccessvlan = ((EthernetSetting) classElement).getAccessVlan();
+               int anotheraccessVlan;
+                if( ((EthernetSetting) classElement).getConectedThing() instanceof  EthernetSetting){
+                    anotheraccessVlan = ((EthernetSetting) ((EthernetSetting) classElement).getConectedThing()).getAccessVlan();
+                    if(myaccessvlan != 0 && anotheraccessVlan !=0){
+                        if(myaccessvlan != anotheraccessVlan){
+                            if(!warningStatements.contains(classElement.getName() + "と" + ((EthernetSetting) ((EthernetSetting) classElement).getConectedThing()).getName() + "のaccessVlanが一致しません") && !warningStatements.contains( ((EthernetSetting) ((EthernetSetting) classElement).getConectedThing()).getName()+ "と" + classElement.getName() + "のaccessVlanが一致しません")) {
+                                warningStatements.add(classElement.getName() + "と" + ((EthernetSetting) ((EthernetSetting) classElement).getConectedThing()).getName() + "のaccessVlanが一致しません");
+                                System.out.println(myaccessvlan + anotheraccessVlan);
+                            }
+                        }
+                    }
+                }
+
+                //mode
+
+                }
+            }
+        }
 
     /*EthernetSettingクラスのチェック*/
     public static void ethernetSettingCheck(EthernetSetting ethernetSetting, ArrayList<String> errorStatements, ArrayList<String> formatErrorStatements) {
@@ -157,7 +214,7 @@ public class AttributeIntegrityChecker {
         }
 
         if (!ethernetSetting.getMode().isEmpty()) {
-            if (!(ethernetSetting.getMode().equals("access") || ethernetSetting.getMode().equals("trunk"))) {
+            if (!(ethernetSetting.getMode().equals("access") || ethernetSetting.getMode().equals("trunk") || ethernetSetting.getMode().isEmpty())) {
                 formatErrorStatements.add(ethernetSetting.getName() + "のmodeの値は無効です。'access' または 'trunk' のいずれかを入力してください");
             }
         }
@@ -174,17 +231,17 @@ public class AttributeIntegrityChecker {
             }
         }
         if (!ethernetSetting.getAccessListInOrOut().isEmpty()) {
-            if (!(ethernetSetting.getAccessListInOrOut().equals("in") || ethernetSetting.getAccessListInOrOut().equals("out"))) {
+            if (!(ethernetSetting.getAccessListInOrOut().equals("in") || ethernetSetting.getAccessListInOrOut().equals("out") || ethernetSetting.getAccessListInOrOut().isEmpty())) {
                 formatErrorStatements.add(ethernetSetting.getName() + "のaccessListInOrOutの値は無効です。'in' または 'out' のいずれかを入力してください");
             }
         }
         if (!ethernetSetting.getSpeed().isEmpty()) {
-            if (!(ethernetSetting.getSpeed().equals("auto") || ethernetSetting.getSpeed().equals("10") || ethernetSetting.getSpeed().equals("100") || ethernetSetting.getSpeed().equals("1000"))) {
+            if (!(ethernetSetting.getSpeed().equals("auto") || ethernetSetting.getSpeed().equals("10") || ethernetSetting.getSpeed().equals("100") || ethernetSetting.getSpeed().equals("1000") || ethernetSetting.getSpeed().isEmpty())) {
                 formatErrorStatements.add(ethernetSetting.getName() + "のspeedの値は無効です。'auto','10','100','1000'のいずれかを入力してください");
             }
         }
         if (!ethernetSetting.getDuplex().isEmpty()) {
-            if (!(ethernetSetting.getDuplex().equals("auto") || ethernetSetting.getDuplex().equals("full") || ethernetSetting.getDuplex().equals("half"))) {
+            if (!(ethernetSetting.getDuplex().equals("auto") || ethernetSetting.getDuplex().equals("full") || ethernetSetting.getDuplex().equals("half") || ethernetSetting.getDuplex().isEmpty())) {
                 formatErrorStatements.add(ethernetSetting.getName() + "のduplexの値は無効です。'full' または 'half' のいずれかを入力してください");
             }
         }
@@ -249,7 +306,7 @@ public class AttributeIntegrityChecker {
             }
         }
         if (!vlanSetting.getAccessListInOrOut().isEmpty()) {
-            if (!(vlanSetting.getAccessListInOrOut() == "in" || vlanSetting.getAccessListInOrOut() == "out")) {
+            if (!(vlanSetting.getAccessListInOrOut().equals("in") || vlanSetting.getAccessListInOrOut().equals("out" )|| vlanSetting.getAccessListInOrOut().isEmpty())) {
                 formatErrorStatements.add(vlanSetting.getName() + "のaccessListInOrOutの値は無効です。'in' または 'out' のいずれかを入力してください");
             }
         }
@@ -269,7 +326,7 @@ public class AttributeIntegrityChecker {
             }
         }
         if (!accessList.getPermitOrDeny().isEmpty()) {
-            if (!(accessList.getPermitOrDeny() == "permit" || accessList.getPermitOrDeny() == "deny")) {
+            if (!(accessList.getPermitOrDeny().equals("permit") || accessList.getPermitOrDeny().equals("deny") || accessList.getPermitOrDeny().isEmpty())) {
                 formatErrorStatements.add(accessList.getName() + "のpermitOrDenyの値は無効です。'permit' または 'deny' のいずれかを入力してください");
             }
         }
@@ -358,7 +415,7 @@ public class AttributeIntegrityChecker {
         if (!link.getDescription().isEmpty()) {
             Matcher descriptionM = linkpattern.matcher(String.valueOf(link.getDescription()));
             if (!descriptionM.matches()) {
-                formatErrorStatements.add(link.getName() + "のdescriptionの値は無効です。正しい形式で入力してください");
+//                formatErrorStatements.add(link.getName() + "のdescriptionの値は無効です。正しい形式で入力してください");
             }
         }
     }
@@ -461,7 +518,7 @@ public class AttributeIntegrityChecker {
             }
         }
         if (!stpSetting.getMode().isEmpty()) {
-            if (!(stpSetting.getMode()== "pvst" || stpSetting.getMode() == "pvst+"|| stpSetting.getMode() == "rstp"|| stpSetting.getMode() == "mstp")) {
+            if (!(stpSetting.getMode().equals("pvst") || stpSetting.getMode().equals("pvst+")  || stpSetting.getMode().equals("rstp")|| stpSetting.getMode().equals("mstp") || stpSetting.getMode().isEmpty())) {
                 formatErrorStatements.add(stpSetting.getName() + "のmodeの値は無効です。'pvst','pvst+','rstp','mstp' のいずれかを入力してください");
             }
         }

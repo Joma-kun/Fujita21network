@@ -253,6 +253,7 @@
 		</pluginManagement>
 	</build>
 	<dependencies>
+
 		<dependency>
 			<groupId>com.change_vision.astah</groupId>
 			<artifactId>astah-api</artifactId>
@@ -278,5 +279,6 @@
 			<version>4.10</version>
 			<scope>test</scope>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.neo4j.driver/neo4j-java-driver -->
 	</dependencies>
 </project>
