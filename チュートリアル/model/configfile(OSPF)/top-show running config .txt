@@ -1,0 +1,138 @@
+Building configuration...
+
+Current configuration : 1440 bytes
+!
+! Last configuration change at 08:40:40 UTC Tue Oct 29 2024
+version 15.1
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname top
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+no aaa new-model
+!
+crypto pki token default removal timeout 0
+!
+!
+ip source-route
+!
+!
+!
+!
+!
+ip cef
+no ipv6 cef
+!
+!
+!
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+license udi pid CISCO892-K9 sn FGL154621KH
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface BRI0
+ no ip address
+ encapsulation hdlc
+ shutdown
+ isdn termination multidrop
+!
+interface FastEthernet0
+ no ip address
+!
+interface FastEthernet1
+ no ip address
+!
+interface FastEthernet2
+ switchport access vlan 10
+ no ip address
+!
+interface FastEthernet3
+ no ip address
+!
+interface FastEthernet4
+ no ip address
+!
+interface FastEthernet5
+ no ip address
+!
+interface FastEthernet6
+ no ip address
+!
+interface FastEthernet7
+ no ip address
+!
+interface FastEthernet8
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+!
+interface GigabitEthernet0
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+!
+interface Vlan1
+ no ip address
+!
+interface Vlan10
+ ip address 10.0.1.2 255.255.255.0
+!
+router ospf 1
+ router-id 1.1.1.1
+ network 10.0.1.0 0.0.0.255 area 0
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+!
+!
+!
+!
+!
+!
+control-plane
+!
+!
+!
+!
+mgcp profile default
+!
+!
+!
+!
+!
+line con 0
+line aux 0
+line vty 0 4
+ login
+ transport input all
+!
+end

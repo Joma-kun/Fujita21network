@@ -1,0 +1,113 @@
+campus7#show run
+Building configuration...
+
+Current configuration : 1293 bytes
+!
+version 12.4
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname campus7
+!
+boot-start-marker
+boot-end-marker
+!
+!
+no aaa new-model
+!
+!
+dot11 syslog
+!
+!
+ip cef
+!
+!
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+archive
+ log config
+  hidekeys
+!
+!
+!
+!
+!
+interface BRI0
+ no ip address
+ encapsulation hdlc
+ shutdown
+!
+interface FastEthernet0
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+!
+interface FastEthernet1
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+!
+interface FastEthernet2
+!
+interface FastEthernet3
+!
+interface FastEthernet4
+ switchport access vlan 90
+!
+interface FastEthernet5
+!
+interface FastEthernet6
+!
+interface FastEthernet7
+!
+interface FastEthernet8
+!
+interface FastEthernet9
+ switchport access vlan 80
+!
+interface Vlan1
+ no ip address
+!
+interface Vlan80
+ ip address 10.0.8.1 255.255.255.0
+!
+interface Vlan90
+ ip address 10.0.9.2 255.255.255.0
+!
+router ospf 1
+ router-id 9.9.9.9
+ log-adjacency-changes
+ area 7 virtual-link 8.8.8.8
+ area 8 virtual-link 2.2.2.2
+ network 10.0.8.0 0.0.0.255 area 7
+ network 10.0.9.0 0.0.0.255 area 8
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+!
+!
+!
+!
+!
+!
+control-plane
+!
+!
+line con 0
+ logging synchronous
+line aux 0
+line vty 0 4
+ login
+!
+end

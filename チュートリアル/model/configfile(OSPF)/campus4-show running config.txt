@@ -1,0 +1,115 @@
+campus4#show
+*Jan  1 00:17:48.711: %SYS-5-CONFIG_I: Configured from console by console
+campus4#show run
+Building configuration...
+
+Current configuration : 1293 bytes
+!
+version 12.4
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname campus4
+!
+boot-start-marker
+boot-end-marker
+!
+!
+no aaa new-model
+!
+!
+dot11 syslog
+!
+!
+ip cef
+!
+!
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+archive
+ log config
+  hidekeys
+!
+!
+!
+!
+!
+interface BRI0
+ no ip address
+ encapsulation hdlc
+ shutdown
+!
+interface FastEthernet0
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+!
+interface FastEthernet1
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+!
+interface FastEthernet2
+!
+interface FastEthernet3
+!
+interface FastEthernet4
+!
+interface FastEthernet5
+!
+interface FastEthernet6
+ switchport access vlan 50
+!
+interface FastEthernet7
+ switchport access vlan 60
+!
+interface FastEthernet8
+!
+interface FastEthernet9
+!
+interface Vlan1
+ no ip address
+!
+interface Vlan50
+ ip address 10.0.5.2 255.255.255.0
+!
+interface Vlan60
+ ip address 10.0.6.2 255.255.255.0
+!
+router ospf 1
+ router-id 6.6.6.6
+ log-adjacency-changes
+ area 4 virtual-link 5.5.5.5
+ area 5 virtual-link 7.7.7.7
+ network 10.0.5.0 0.0.0.255 area 4
+ network 10.0.6.0 0.0.0.255 area 5
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+!
+!
+!
+!
+!
+!
+control-plane
+!
+!
+line con 0
+ logging synchronous
+line aux 0
+line vty 0 4
+ login
+!
+end

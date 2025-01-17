@@ -1,0 +1,118 @@
+dc#show run
+Building configuration...
+
+Current configuration : 1404 bytes
+!
+version 12.4
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname dc
+!
+boot-start-marker
+boot-end-marker
+!
+!
+no aaa new-model
+!
+!
+dot11 syslog
+!
+!
+ip cef
+!
+!
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+archive
+ log config
+  hidekeys
+!
+!
+!
+!
+!
+interface BRI0
+ no ip address
+ encapsulation hdlc
+ shutdown
+!
+interface FastEthernet0
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+!
+interface FastEthernet1
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+!
+interface FastEthernet2
+ switchport access vlan 10
+!
+interface FastEthernet3
+ switchport access vlan 20
+!
+interface FastEthernet4
+ switchport access vlan 90
+!
+interface FastEthernet5
+!
+interface FastEthernet6
+!
+interface FastEthernet7
+!
+interface FastEthernet8
+!
+interface FastEthernet9
+!
+interface Vlan1
+ no ip address
+!
+interface Vlan10
+ ip address 10.0.1.1 255.255.255.0
+!
+interface Vlan20
+ ip address 10.0.2.1 255.255.255.0
+!
+interface Vlan90
+ ip address 10.0.9.1 255.255.255.0
+!
+router ospf 1
+ router-id 2.2.2.2
+ log-adjacency-changes
+ area 1 virtual-link 3.3.3.3
+ area 8 virtual-link 9.9.9.9
+ network 10.0.1.0 0.0.0.255 area 0
+ network 10.0.2.0 0.0.0.255 area 1
+ network 10.0.9.0 0.0.0.255 area 8
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+!
+!
+!
+!
+!
+!
+control-plane
+!
+!
+line con 0
+ logging synchronous
+line aux 0
+line vty 0 4
+ login
+!
+end
