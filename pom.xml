@@ -259,7 +259,7 @@
 			<artifactId>astah-api</artifactId>
 			<version>${astah.version}</version>
 			<scope>system</scope>
-			<systemPath>${astahPath}/astah-api.jar</systemPath>
+			<systemPath>C:/Program Files/astah-professional/astah-api.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>org.osgi</groupId>
@@ -279,6 +279,56 @@
 			<version>4.10</version>
 			<scope>test</scope>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.neo4j.driver/neo4j-java-driver -->
+<!--		<dependency>-->
+<!--			<groupId>org.neo4j.driver</groupId>-->
+<!--			<artifactId>neo4j-java-driver</artifactId>-->
+<!--			<version>4.4.12</version>-->
+<!--		</dependency>-->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>2.8.11</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.8.11</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>2.8.11</version>
+		</dependency>
+		<!--		個々より下は使わない-->
+<!--		<dependency>-->
+<!--			<groupId>org.neo4j.driver</groupId>-->
+<!--			<artifactId>neo4j-java-driver-slim</artifactId>-->
+<!--			<version>4.4.12</version>-->
+<!--		</dependency>-->
+
+
+		<!--		<dependency>-->
+<!--			<groupId>com.neo4j</groupId>-->
+<!--			<artifactId>neo4j</artifactId>-->
+<!--			<version>4.4.13</version>-->
+<!--			<scope>provided</scope>-->
+<!--		</dependency>-->
+<!--		<dependency>-->
+<!--			<groupId>org.neo4j.driver</groupId>-->
+<!--			<artifactId>neo4j-java-driver</artifactId>-->
+<!--			<version>4.4.13</version>-->
+<!--			<scope>test</scope>-->
+<!--		</dependency>-->
+<!--		<dependency>-->
+<!--			<groupId>com.neo4j.test</groupId>-->
+<!--			<artifactId>neo4j-harness-enterprise</artifactId>-->
+<!--			<version>4.4.13</version>-->
+<!--			<scope>test</scope>-->
+<!--		</dependency>-->
+
 		<!-- https://mvnrepository.com/artifact/org.neo4j.driver/neo4j-java-driver -->
 	</dependencies>
 </project>

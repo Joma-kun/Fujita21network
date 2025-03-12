@@ -2,67 +2,62 @@ package com.example.classes;
 
 public class Clients extends LinkableElement {
 
-	private String name;
+    private String name;
 
-	private String ipAddress;
+    private String ipAddress;
 
-	private String subnetMask;
+    private int subnetMask;
 
-	private String defaultGateway;
+    private String defaultGateway;
 
-	private Link link;
-
-
-	public String getName2() {
-		return name;
-	}
+    private Link link;
 
 
-	public void setNames(String name) {
-		this.name = name;
-	}
-
-	public String getIpAddress() {
-		return ipAddress;
-	}
-
-	public void setIpAddress(String ipAddress) {
-		this.ipAddress = ipAddress;
-	}
-
-	public String getSubnetMask() {
-		return subnetMask;
-	}
-
-	public void setSubnetMask(String subnetMask) {
-		this.subnetMask = subnetMask;
-	}
-
-	public String getDefaultGateway() {
-		return defaultGateway;
-	}
-
-	public void setDefaultGateway(String defaultGateway) {
-		this.defaultGateway = defaultGateway;
-	}
-
-	public Link getLink() {
-		return link;
-	}
+    public String getName2() {
+        return name;
+    }
 
 
-	public void setLink(Link link) {
-		if(this.link!=null){
-			setNodeFalseInstances(this.link);
-			setNodeFalseInstances(link);
-			setNodeFalseInstances(this);
-			setErrorStatement("エラー:["+this.getName()+"]と[linkのインスタンス]の関連において、最大多重度を超えました。2個以上のオブジェクトを関連付けることはできません。");
-		}
-		this.link = link;
-	}
+    public void setNames(String name) {
+        this.name = name;
+    }
 
-//	@Override
-//	public void setLink(IInstancespecification_model instance) {
-//		this.setLink(instance);
-//	}
+    public String getIpAddress() {
+        return ipAddress;
+    }
+
+    public void setIpAddress(String ipAddress) {
+        this.ipAddress = ipAddress;
+    }
+
+    public int getSubnetMask() {
+        return subnetMask;
+    }
+
+    public void setSubnetMask(int subnetMask) {
+        this.subnetMask = subnetMask;
+    }
+
+    public String getDefaultGateway() {
+        return defaultGateway;
+    }
+
+    public void setDefaultGateway(String defaultGateway) {
+        this.defaultGateway = defaultGateway;
+    }
+
+    public Link getLink() {
+        return link;
+    }
+
+
+    public void setLink(Link link) {
+        if (this.link != null) {
+            setNodeFalseInstances(this.link);
+            setNodeFalseInstances(link);
+            setNodeFalseInstances(this);
+            setmultiplicityErrorStatement("エラー:[" + this.getName() + "]と[linkのインスタンス]の関連において、最大多重度を超えました。2個以上のオブジェクトを関連付けることはできません。");
+        }
+        this.link = link;
+    }
 }

@@ -5,174 +5,171 @@ import com.example.element.ClassElement;
 import java.util.ArrayList;
 
 public class Config extends ClassElement {
-	public Config(){
-		vlan = new ArrayList<>();
-		ethernetSetting = new ArrayList<>();
-		vlanSetting = new ArrayList<>();
-		accessList = new ArrayList<>();
-		vlanSetting = new ArrayList<>();
-		stpSetting = new ArrayList<>();
-		linkedConfigs=new ArrayList<>();
-	}
-	private ArrayList<Config> linkedConfigs;//Linkでつながれたコンフィグを格納しておく。隣接リスト表現
+    public Config() {
+        vlan = new ArrayList<>();
+        ethernetSetting = new ArrayList<>();
+        vlanSetting = new ArrayList<>();
+        accessList = new ArrayList<>();
+        vlanSetting = new ArrayList<>();
+        stpSetting = new ArrayList<>();
+        linkedConfigs = new ArrayList<>();
+    }
 
-	public void setLinkedConfigs(Config linkedConfig) {
-		linkedConfigs.add(linkedConfig);
-	}
+    private ArrayList<Config> linkedConfigs;//Linkでつながれたコンフィグを格納しておく。隣接リスト表現 属性になし
 
-	public ArrayList<Config> getLinkedConfigs(){
-		return linkedConfigs;
-		}
-	private String deviceModel;
+    private String deviceModel;
 
-	private ArrayList<Vlan> vlan ;
+    private ArrayList<Vlan> vlan;
 
-	private Stack stack;
+    private Stack stack;
+    private ArrayList<AccessList> accessList;
 
-	public Stack getStack() {
-		return stack;
-	}
+    private ArrayList<IpRoute> ipRoute;
 
-	public void setStack(Stack stack) {
-		this.stack = stack;
-	}
+    private ArrayList<OspfSetting> ospfSettings;
 
-	private ArrayList<EthernetSetting> ethernetSetting ;
 
-	private Hostname hostname = null;
+    private ArrayList<EthernetSetting> ethernetSetting;
 
-	private ArrayList<VlanSetting> vlanSetting ;
+    private Hostname hostname = null;
 
-	private OspfSetting ospfSetting;
+    private ArrayList<VlanSetting> vlanSetting;
 
-	private ArrayList<StpSetting> stpSetting ;
+    private OspfSetting ospfSetting;
 
-	public String getDeviceModel() {
-		return deviceModel;
-	}
+    private ArrayList<StpSetting> stpSetting;
 
-	public void setDeviceModel(String deviceModel) {
-		this.deviceModel = deviceModel;
-	}
+    public String getDeviceModel() {
+        return deviceModel;
+    }
 
-	public ArrayList<Vlan> getVlan() {
-		return vlan;
-	}
+    public void setDeviceModel(String deviceModel) {
+        this.deviceModel = deviceModel;
+    }
 
-	public void setVlan(Vlan v) {
-		vlan.add(v);
-	}
+    public ArrayList<Vlan> getVlan() {
+        return vlan;
+    }
 
-	public ArrayList<EthernetSetting> getEthernetSetting() {
-		return ethernetSetting;
-	}
+    public void setVlan(Vlan v) {
+        vlan.add(v);
+    }
 
-	public void setEthernetSetting(EthernetSetting e) {
-		ethernetSetting.add(e);
-	}
+    public ArrayList<EthernetSetting> getEthernetSetting() {
+        return ethernetSetting;
+    }
 
-	public Hostname getHostname() {
-		return hostname;
-	}
+    public void setEthernetSetting(EthernetSetting e) {
+        ethernetSetting.add(e);
+    }
 
-	public void setHostname(Hostname hostname) {
+    public Hostname getHostname() {
+        return hostname;
+    }
 
-		if(this.hostname!=null){
-			setNodeFalseInstances(this.hostname);
-			setNodeFalseInstances(hostname);
-			setNodeFalseInstances(this);
-			setErrorStatement("エラー:["+getName()+"]と["+hostname.getClassName()+"のインスタンス]の関連において、最大多重度を超えました。2個以上のオブジェクトを関連付けることはできません。");
-		}this.hostname = hostname;
-	}
+    public void setLinkedConfigs(Config linkedConfig) {
+        linkedConfigs.add(linkedConfig);
+    }
 
-	public ArrayList<VlanSetting> getVlanSetting() {
-		return vlanSetting;
-	}
+    public ArrayList<Config> getLinkedConfigs() {
+        return linkedConfigs;
+    }
 
-	public void setVlanSetting(VlanSetting v) {
-		vlanSetting.add(v);
-	}
+    public void setHostname(Hostname hostname) {
 
-	public OspfSetting getOspfSetting() {
-		return ospfSetting;
-	}
+        if (this.hostname != null) {
+            setNodeFalseInstances(this.hostname);
+            setNodeFalseInstances(hostname);
+            setNodeFalseInstances(this);
+            setmultiplicityErrorStatement("エラー:[" + getName() + "]と[" + hostname.getClassName() + "のインスタンス]の関連において、最大多重度を超えました。2個以上のオブジェクトを関連付けることはできません。");
+        }
+        this.hostname = hostname;
+    }
 
-	public void setOspfSetting(OspfSetting ospfSetting) {
+    public ArrayList<VlanSetting> getVlanSetting() {
+        return vlanSetting;
+    }
 
-		if(this.ospfSetting!=null){
-			setNodeFalseInstances(this.ospfSetting);
-			setNodeFalseInstances(ospfSetting);
-			setNodeFalseInstances(this);
-			setErrorStatement("エラー:["+getName()+"]と["+ospfSetting.getClassName()+"のインスタンス]の関連において、最大多重度を超えました。2個以上のオブジェクトを関連付けることはできません。");
-		}
-		this.ospfSetting = ospfSetting;
-	}
+    public void setVlanSetting(VlanSetting v) {
+        vlanSetting.add(v);
+    }
 
-	public ArrayList<StpSetting> getStpSetting() {
-		return stpSetting;
-	}
+    public OspfSetting getOspfSetting() {
+        return ospfSetting;
+    }
 
-	public void setStpSetting(StpSetting s) {
-		stpSetting.add(s);
-	}
+    public void setOspfSetting(OspfSetting ospfSetting) {
 
-	public ArrayList<AccessList> getAccessList() {
-		return accessList;
-	}
+        if (this.ospfSetting != null) {
+            setNodeFalseInstances(this.ospfSetting);
+            setNodeFalseInstances(ospfSetting);
+            setNodeFalseInstances(this);
+            setmultiplicityErrorStatement("エラー:[" + getName() + "]と[" + ospfSetting.getClassName() + "のインスタンス]の関連において、最大多重度を超えました。2個以上のオブジェクトを関連付けることはできません。");
+        }
+        this.ospfSetting = ospfSetting;
+    }
 
-	public void setAccessList(AccessList a) {
-		accessList.add(a);
-	}
+    public ArrayList<StpSetting> getStpSetting() {
+        return stpSetting;
+    }
 
-	public ArrayList<IpRoute> getIpRoute() {
-		return ipRoute;
-	}
+    public void setStpSetting(StpSetting s) {
+        stpSetting.add(s);
+    }
 
-	public void setIpRoute(IpRoute i) {
-		ipRoute.add(i);
-	}
+    public Stack getStack() {
+        return stack;
+    }
 
-	public ArrayList<OspfSetting> getOspfSettings() {
-		return ospfSettings;
-	}
+    public void setStack(Stack stack) {
+        this.stack = stack;
+    }
 
-	public void setOspfSettings(OspfSetting o) {
-		ospfSettings.add(o);
-	}
+    public ArrayList<AccessList> getAccessList() {
+        return accessList;
+    }
 
-	private ArrayList<AccessList> accessList ;
+    public void setAccessList(AccessList a) {
+        accessList.add(a);
+    }
 
-	private ArrayList<IpRoute> ipRoute ;
+    public ArrayList<IpRoute> getIpRoute() {
+        return ipRoute;
+    }
 
-	private ArrayList<OspfSetting> ospfSettings;
+    public void setIpRoute(IpRoute i) {
+        ipRoute.add(i);
+    }
 
-//	@Override
-//	public void setLink(IInstancespecification_model instance) {
-//		if(instance instanceof Vlan){
-//			vlan.add((Vlan) instance);
-//		}
-//		if (instance instanceof EthernetSetting){
-//			ethernetSetting.add((EthernetSetting) instance);
-//		}
-//		if(instance instanceof Hostname){
-//			this.hostname = (Hostname) instance;
-//		}
-//		if(instance instanceof VlanSetting){
-//			vlanSetting.add((VlanSetting) instance);
-//		}
-//		if(instance instanceof OspfSetting){
-//			ospfSettings.add((OspfSetting) instance);
-//			this.ospfSetting = (OspfSetting) instance;
-//		}
-//		if(instance instanceof StpSetting){
-//			stpSetting.add((StpSetting) instance);
-//		}
-//		if(instance instanceof AccessList){
-//			accessList.add((AccessList) instance);
-//		}
-//		if(instance instanceof IpRoute){
-//			ipRoute.add((IpRoute) instance);
-//		}
-//
-//	}
+    public ArrayList<OspfSetting> getOspfSettings() {
+        return ospfSettings;
+    }
+
+    //Config-eth-link-eth2-anotherconfigとつながれていたらethをかえす
+    public void setOspfSettings(OspfSetting o) {
+        ospfSettings.add(o);
+    }
+
+    public  EthernetSetting getEthernetSettingOne(Config anotherconfig){
+        for(EthernetSetting eth : this.getEthernetSetting()){
+            if(eth.getConectedThing() instanceof EthernetSetting){
+                if(((EthernetSetting) eth.getConectedThing()).getConfig()==anotherconfig){
+                    return eth;
+                }
+            }
+        }
+        return null;
+    }
+    //Config-eth-link-eth2-anotherconfigとつながれていたらeth２をかえす
+    public  EthernetSetting getanoterEthernetSettingOne(Config anotherconfig){
+        for(EthernetSetting eth : this.getEthernetSetting()){
+            if(eth.getConectedThing() instanceof EthernetSetting){
+                if(((EthernetSetting) eth.getConectedThing()).getConfig()==anotherconfig){
+                    return (EthernetSetting) eth.getConectedThing();
+                }
+            }
+        }
+        return null;
+    }
+
 }

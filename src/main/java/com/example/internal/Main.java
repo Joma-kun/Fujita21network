@@ -15,62 +15,106 @@ import com.change_vision.jude.api.inf.project.ProjectEvent;
 import com.change_vision.jude.api.inf.project.ProjectEventListener;
 import com.change_vision.jude.api.inf.ui.IPluginExtraTabView;
 import com.change_vision.jude.api.inf.ui.ISelectionListener;
-import com.example.classes.*;
+import com.example.classes.Config;
+import com.example.classes.EthernetSetting;
+import com.example.classes.OspfInterfaceSetting;
+import com.example.data.OspfData;
 import com.example.element.ClassElement;
 import com.example.element.LinkElement;
+//import org.neo4j.driver.*;
+
+import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Paths;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import static com.example.internal.ChangeClassInformation.isFullWidth;
+//import static org.neo4j.driver.Values.parameters;
 
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.lang.reflect.Array;
+import java.nio.file.StandardWatchEventKinds;
+import java.rmi.ConnectIOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-
-import static com.example.internal.OutputInformation.recordBeforeInstanceColar;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Main extends JPanel
-        implements IPluginExtraTabView, ProjectEventListener , ActionListener {
+        implements IPluginExtraTabView, ProjectEventListener, ActionListener {
     private JButton button;//拡張タブにあるrunボタン
-    public JTextField text ;
+    public JTextField text;
+    public JCheckBox check1, check2, check3, check4, check5;
+    public Map<String, Boolean> checkBoxStatus;
     public JPanel mainPanel = new JPanel(new BorderLayout());//エラー文などを出力するパネル（なかにinputpanelもある）
-boolean colorCount = true;//outputInfomationの色戻し処理用
+    boolean colorCount = true;//outputInfomationの色戻し処理用
     public JTabbedPane tabbedPane = new JTabbedPane();//タブを追加するためのもの
 
     public ArrayList<String> beforeInstanceColor = new ArrayList<>();//9-14お試し処理
     public ArrayList<IPresentation> beforeInstance = new ArrayList<>();//9-14お試し処理
+    private java.awt.event.KeyEvent KeyEvent;
 
 
-    public Main() {
+    public Main() throws Exception {
         initComponents();//最初に行われる処理
-
-           }
-    private void initComponents() {//最初に行われるメソッド（ボタンの挙動）
-        setLayout(new BorderLayout());//拡張タブのボタンのレイアウト
-        text = new JTextField(50);
-
-
-        add(selectPane(tabbedPane,mainPanel),BorderLayout.NORTH);//拡張タブに貼るコンポーネント（ボタン）（selectPane)，とその配置
-        addProjectEventListener();
     }
 
 
 
-    private Container selectPane(JTabbedPane tabbedPane,JPanel mainPanel) {//コンポーネント（ボタン）についてのメソッド
+    private void initComponents() throws Exception {//最初に行われるメソッド（ボタンの挙動）
+        mainPanel.setPreferredSize(new Dimension(800, 500));
+        setLayout(new BorderLayout());//拡張タブのボタンのレイアウト
+        text = new JTextField(50);
+
+
+        add(selectPane(tabbedPane, mainPanel), BorderLayout.NORTH);//拡張タブに貼るコンポーネント（ボタン）（selectPane)，とその配置
+        addProjectEventListener();
+    }
+
+
+    public Container selectPane(JTabbedPane tabbedPane, JPanel mainPanel) {//コンポーネント（ボタン）についてのメソッド
         JPanel inputPanel = new JPanel();//入力エリアとボタンを配置する
         button = new JButton("run");//ボタンを作る
+
         JScrollPane panes = new JScrollPane(button);//スクロールできるようにする
         button.addActionListener(this);//ボタンにアクションリスナー（ボタンが押されたときにactionpeformedを実行する）を追加する
-        inputPanel.add(text,BorderLayout.NORTH);//テキストエリア配置
-        inputPanel.add(panes,BorderLayout.SOUTH);//ボタン配置
+        text.addActionListener(this);
+        inputPanel.add(text, BorderLayout.NORTH);//テキストエリア配置
+        inputPanel.add(panes, BorderLayout.SOUTH);//ボタン配置
 
-        mainPanel.add(inputPanel,BorderLayout.NORTH);//テキストエリアとボタンをエラー文出力画面の上に追加する
-        tabbedPane.addTab("MAIN",mainPanel);//タブの一つ目にmainPnaelを追加する
+        mainPanel.add(inputPanel, BorderLayout.NORTH);//テキストエリアとボタンをエラー文出力画面の上に追加する
+
+        //チェックボックスのための処理　ここから
+        JPanel checkBoxPanel = new JPanel();//チェックボックスをまとめるパネル
+        checkBoxPanel.setLayout(new BoxLayout(checkBoxPanel, BoxLayout.Y_AXIS));//縦に並べるレイアウト
+
+//         check1 = new JCheckBox("IP");
+//         check2 = new JCheckBox("VLAN");
+//         check3 = new JCheckBox("OSPF");
+//         check4 = new JCheckBox("STP");
+//         check5 = new JCheckBox("ACL");
+
+//        // チェックボックスをパネルに追加
+//        checkBoxPanel.add(check1);
+//        checkBoxPanel.add(check2);
+//        checkBoxPanel.add(check3);
+//        checkBoxPanel.add(check4);
+//        checkBoxPanel.add(check5);
+
+        mainPanel.add(checkBoxPanel, BorderLayout.WEST); // チェックボックスを中央に配置
+
+        //ここまで
+        tabbedPane.addTab("MAIN", mainPanel);//タブの一つ目にmainPnaelを追加する
 
         return tabbedPane;//タブを含むパネルを返す
+
+
     }
 
     private void addProjectEventListener() {//ボタンが押されたときに，プロジェクトを実行するためのメソッド
@@ -80,27 +124,42 @@ boolean colorCount = true;//outputInfomationの色戻し処理用
             projectAccessor.addProjectEventListener(this);//プロジェクトリスナを追加する
         } catch (ClassNotFoundException e) {
             e.getMessage();
-        }}
+        }
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {//アクションが発生（ボタンが押される）と呼び出される
 //        System.out.println("ボタン完成");
         String input = text.getText();
+        //チェックボックスのための処理　ここから
+        //チェックボックスの情報の取得とMAPでの格納
+//        checkBoxStatus = new HashMap<>();
+//        checkBoxStatus.put("IP", check1.isSelected());
+//        checkBoxStatus.put("VLAN", check2.isSelected());
+//        checkBoxStatus.put("OSPF", check3.isSelected());
+//        checkBoxStatus.put("STP", check4.isSelected());
+//        checkBoxStatus.put("ACL", check5.isSelected());
+//
 
-        if(input.isEmpty()) {
-            mainPanel.add(createLabelPane(), BorderLayout.CENTER);//拡張タブの下側のパネルを作る
-        }else{
-            if(colorCount){//色戻し処理のための作業　beforeInstanceとbeforeInstanceColor
-                mainPanel.add(createLabelPane(), BorderLayout.CENTER);//拡張タブの下側のパネルを作る
-                mainPanel.remove(createLabelPane());
+        //ここまで
+        if (input.isEmpty() || input.equals("no")) {
+            mainPanel.add(createLabelPane(input,checkBoxStatus), BorderLayout.CENTER);//拡張タブの下側のパネルを作る
+        } else {
+            if (colorCount) {//色戻し処理のための作業　beforeInstanceとbeforeInstanceColor
+                mainPanel.add(createLabelPane(input,checkBoxStatus), BorderLayout.CENTER);//拡張タブの下側のパネルを作る
+                mainPanel.remove(createLabelPane(input,checkBoxStatus));
                 colorCount = false;
             }
             OutputInformation outputInformation = new OutputInformation(tabbedPane);
-            outputInformation.createLabelPaneJoho(input,beforeInstance,beforeInstanceColor);//新しいタブを作成して情報を出力する
-        }
+            outputInformation.createLabelPaneJoho(input, beforeInstance, beforeInstanceColor);//新しいタブを作成して情報を出力する
         }
 
 
-    public Container createLabelPane() throws RuntimeException {//Panelの中身
+
+    }
+
+
+    public Container createLabelPane(String input,Map<String, Boolean> checkBoxStatus) throws RuntimeException {//Panelの中身
         TextArea textarea = new TextArea();//パネルの文章を入力する部分
         textarea.setText("<実行結果>\n");
         ProjectAccessor projectAccessor = null;
@@ -118,11 +177,38 @@ boolean colorCount = true;//outputInfomationの色戻し処理用
             }//取得した情報のIPresentation(関連船やグラフの情報）を得る．
 
             //自分たちのinstance情報に変えるための処理
-            ArrayList<ClassElement> instances = ChangeClassInformation.changeAllElement(presentations);
+            ArrayList<ClassElement> instances = null;
+            ArrayList<String> formatErrorStatements = new ArrayList<>();
+            ArrayList<ClassElement> errorInstances = new ArrayList<>();
+
+            instances = ChangeClassInformation.changeAllElement(presentations,textarea,formatErrorStatements,errorInstances);
+
+
             //linkの情報を変換する
-            ArrayList<LinkElement> links = ChangeClassInformation.changeLinkInformation(presentations,instances);
+            ArrayList<LinkElement> links = ChangeClassInformation.changeLinkInformation(presentations, instances);
+            //設計者の意図ファイルの読み込み
+//            ObjectMapper objectMapper = new ObjectMapper();
 
 
+
+//
+//            //ファイルが存在するか確認する
+//            if(file.exists()) {
+//
+//                //FileReaderクラスのオブジェクトを生成する
+//                FileReader filereader = new FileReader(file);
+//
+//                //filereaderクラスのreadメソッドでファイルを1文字ずつ読み込む
+//                int data;
+//                while ((data = filereader.read()) != -1) {
+//                    System.out.print((char) data);
+//                }
+//
+//                //ファイルクローズ
+//                filereader.close();
+//            }else {
+//                System.out.print("ファイルは存在しません");
+//            }
             //IInstancespecificationの仕様確認
             // ここから
 //            for (ClassElement instance:instances){
@@ -156,8 +242,6 @@ boolean colorCount = true;//outputInfomationの色戻し処理用
             //ここまで
 
 
-
-
             //ここからチェック処理開始
             try {//モデル編集のためのトランザクション処理
                 transactionManager.beginTransaction();//トランザクションの開始
@@ -169,64 +253,126 @@ boolean colorCount = true;//outputInfomationの色戻し処理用
                 instanceの色を元に戻し、その状態を新しくbeforeInstanceとbeforeInstanceColorに格納して次につなげる。
                  */
                 //ここから
-                if(beforeInstance.size()!=0){//一回目は実行しない
-                    for(IPresentation presentation :presentations){//現在のpresentationを取得したもの
-                        for(int bf=0;bf<beforeInstance.size();bf++){//前のインスタンスと同じところの色を戻すためのループ
-                            if(presentation==beforeInstance.get(bf)){//前のインスタンスが存在するとき
-                                presentation.setProperty(PresentationPropertyConstants.Key.FILL_COLOR,beforeInstanceColor.get(bf));//前の色（初期の色）を適用させる
+
+                if (beforeInstance.size() != 0) {//一回目は実行しない
+                    for (IPresentation presentation : presentations) {//現在のpresentationを取得したもの
+                        for (int bf = 0; bf < beforeInstance.size(); bf++) {//前のインスタンスと同じところの色を戻すためのループ
+                            if (presentation == beforeInstance.get(bf)) {//前のインスタンスが存在するとき
+                                presentation.setProperty(PresentationPropertyConstants.Key.FILL_COLOR, beforeInstanceColor.get(bf));//前の色（初期の色）を適用させる
                             }
                         }
                     }
                 }
                 //最後
                 beforeInstance.clear();//新しくInstanceを登録するために一旦すべて削除する。
-                for(IPresentation presentation:presentations){//インスタンスのみを取り出すためのループ。カラーを設定する処理がインスタンスと線で違うため
+                for (IPresentation presentation : presentations) {//インスタンスのみを取り出すためのループ。カラーを設定する処理がインスタンスと線で違うため
 
-                    if (presentation instanceof INodePresentation){//インスタンスの名前、スロットの処理
+                    if (presentation instanceof INodePresentation) {//インスタンスの名前、スロットの処理
                         IElement model = presentation.getModel();
-                        if(model instanceof IInstanceSpecification){
+                        if (model instanceof IInstanceSpecification) {
                             IInstanceSpecification instanceSpecification = (IInstanceSpecification) model;
                             beforeInstance.add(presentation);//インスタンスの時のみリストに追加する
                         }
                     }
-                    if(presentation instanceof ILinkPresentation){//線の時
-                            presentation.setProperty(PresentationPropertyConstants.Key.LINE_COLOR,"#000000");
-                        }
+                    if (presentation instanceof ILinkPresentation) {//線の時
+                        presentation.setProperty(PresentationPropertyConstants.Key.LINE_COLOR, "#000000");
+                    }
                 }
                 beforeInstanceColor = recordBeforeInstanceColar(presentations);
                 //ここまで（astahの色戻し処理）
                 //AttributeInntegrityChecker属性の値の解析
-                AttributeIntegrityChecker attributeIntegrityChecker = new AttributeIntegrityChecker(instances,textarea);
-                attributeIntegrityChecker.AllAttributeIntegrityCheck();
+//                AttributeIntegrityChecker attributeIntegrityChecker = new AttributeIntegrityChecker(instances, textarea);
+//                attributeIntegrityChecker.AllAttributeIntegrityCheck();
+
+                for(ClassElement eInstance : errorInstances){
+                    Check.changeColor(eInstance,"#ff0000");
+                }
+
+                //データベース接続
+//                String uri = "bolt://localhost:7687";
+//                String user = "neo4j";
+//                String password = "password";
+//
+//                // Neo4jExampleクラスをインスタンス化して実行
+//                try (HelloWorldExample greeter = new HelloWorldExample(uri, user, password)) {
+//                    greeter.printGreeting("hello, world");
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+
+                if(formatErrorStatements.size()==0 || input.equals("no") ) {
+                    ;
+                    System.out.println("check開始");
+                    //ここからチェック開始
+                    ArrayList<String> errorStatement = new ArrayList<>();
+                    ArrayList<String> warningStatement = new ArrayList<>();
+
+//                    checkBoxStatus.forEach((key, value) -> {
+//                        System.out.println(key + ": " + (value ? "Checked" : "Unchecked"));
+//                    });
+                    Check.oposingVlancheck(instances, textarea, errorStatement, warningStatement);
+                   System.out.println("oposingVlancheck");
+
+                   Check.conectedConfigCheck(instances, textarea, errorStatement, warningStatement);
+                    //astahの必須項目のチェック　EthernetSettingにLinkとConcigがあるべきなど
+//                    Check.asta(instances, textarea, errorStatement, warningStatement);
+                    //関連の多重度のチェック
+                    Check.nodeCheck( instances, links, errorStatement);
+                    System.out.println("nodeCheck");
+                    //関連がないもののチェック
+                    Check.notLinkCheck(textarea, instances, links, errorStatement);
+                    //欠如などのチェック
+                    Check.nodeKetujoCheck(instances,textarea,errorStatement,warningStatement);
+                    System.out.println("notLinkCheck");
+                    if (errorStatement.size() == 0) {
+
+                        //ipアドレス重複チェック
+                        Check.ipAddressDuplicationCheck(textarea, instances, errorStatement, warningStatement);
+                    System.out.println("ipAddressDuplicationCheck");
+                        //Vlan重複チェック
+                        Check.vlanDuplicationCheck(textarea, instances, warningStatement);
+                    System.out.println("vlanDuplicationCheck");
+                        //nativeVLANが一致するかどうかのチェック
+                        Check.nativeVlanCheck(instances, textarea, errorStatement, warningStatement);
+                    System.out.println("nativeVlanCheck");
 
 
-                //ここからチェック開始
+                        Check.osfpCheck(instances, textarea, errorStatement, warningStatement);
+                    System.out.println("osfpCheck");
+//                    Check.ospfIntentionCheck(instances,ospfjson,textarea,errorStatement,warningStatement);
 
 
-                //関連の多重度のチェック
-                Check.nodeCheck(textarea, instances,links);
-
-                //関連がないもののチェック
-
-                Check.notLinkCheck(textarea,instances,links);
-
-                //ipアドレス重複チェック
-                Check.ipAddressDuplicationCheck(textarea,instances);
-
-                //Vlan重複チェック
-                Check.vlanDuplicationCheck(textarea,instances);
-
-                //nativeVLANが一致するかどうかのチェック
-                Check.nativeCheck(instances,textarea);
-                // DFSここから
-
-//                Check.dfsCheck(instances,1);
 
 
-//                ArrayList<ArrayList<Config>> rupeConfigs=Check.rupeChecks(instances,textarea);
-                //ここまで
+                    // DFSここから
+                    //ループ
+//              Check.dfsCheck(instances,1);
 
-                textarea.append("終了");
+                    //この下を戻す
+//              ArrayList<ArrayList<Config>> rupeConfigs=Check.rupeChecks(instances,textarea,warningStatement);
+//              Check.stpCheck(instances,rupeConfigs,textarea,errorStatement,warningStatement);
+//System.out.println("stpCheck終了");
+
+                }
+              //エラー文の出力
+                    for(String errorState : errorStatement) {
+                        textarea.append("[error]: " + errorState + "\n");
+                    }
+                    //警告文の出力
+                    for(String warningState : warningStatement){
+                        textarea.append("[warning]: " + warningState +"\n");
+                    }
+
+//                    ここまで
+                }else{
+                    for (String formatErrorstatement : formatErrorStatements) {
+                        textarea.append(formatErrorstatement + "\n");
+                    }
+
+                }
+                    textarea.append("check終了");
+
+
                 transactionManager.endTransaction();//トランザクションの終了
             } catch (Exception e) {
 
@@ -235,15 +381,12 @@ boolean colorCount = true;//outputInfomationの色戻し処理用
             }
 
 
-
-
-
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         } catch (ProjectNotFoundException e) {
             String message = "Please open a project";
 
-        } catch (InvalidUsingException e) {
+        } catch (InvalidUsingException | InvalidEditingException e) {
             throw new RuntimeException(e);
         }
         textarea.setEditable(false);//テキストエリアを編集不可能にする
@@ -252,12 +395,12 @@ boolean colorCount = true;//outputInfomationの色戻し処理用
     }
 
 
-    public static ArrayList<String> recordBeforeInstanceColar(ArrayList<IPresentation> presentations){//最初のインスタンスの色を記憶しておくための物
+    public static ArrayList<String> recordBeforeInstanceColar(ArrayList<IPresentation> presentations) {//最初のインスタンスの色を記憶しておくための物
         ArrayList<String> firstPresenttationColor = new ArrayList<>();
-        for(IPresentation presentation:presentations){
-            if (presentation instanceof INodePresentation){//インスタンスの名前、スロットの処理
+        for (IPresentation presentation : presentations) {
+            if (presentation instanceof INodePresentation) {//インスタンスの名前、スロットの処理
                 IElement model = presentation.getModel();
-                if(model instanceof com.change_vision.jude.api.inf.model.IInstanceSpecification){
+                if (model instanceof com.change_vision.jude.api.inf.model.IInstanceSpecification) {
                     com.change_vision.jude.api.inf.model.IInstanceSpecification instanceSpecification = (com.change_vision.jude.api.inf.model.IInstanceSpecification) model;
                     firstPresenttationColor.add(presentation.getProperty(PresentationPropertyConstants.Key.FILL_COLOR));
                 }
@@ -265,9 +408,6 @@ boolean colorCount = true;//outputInfomationの色戻し処理用
         }
         return firstPresenttationColor;
     }
-
-
-
 
 
     @Override
@@ -307,7 +447,6 @@ boolean colorCount = true;//outputInfomationの色戻し処理用
 
     public void deactivated() {
     }
-
 
 
 

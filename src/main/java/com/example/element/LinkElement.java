@@ -2,7 +2,7 @@ package com.example.element;
 
 import com.change_vision.jude.api.inf.presentation.ILinkPresentation;
 
-public class LinkElement{//線の情報
+public class LinkElement {//線の情報
     private ClassElement sourceEnd;//つながっているインスタンス
     private ClassElement targetEnd;//つながっているインスタンス
 

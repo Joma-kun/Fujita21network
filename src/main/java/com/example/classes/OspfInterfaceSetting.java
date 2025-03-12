@@ -4,51 +4,99 @@ import com.example.element.ClassElement;
 
 public class OspfInterfaceSetting extends ClassElement {
 
-	private String ipAddress;
+    private String ipAddress;
 
-	private String wildcardMask;
+    private String wildcardMask;
 
-	private int areaId = -1;
+    private int areaId = -1;
 
-	public String getIpAddress() {
-		return ipAddress;
-	}
+    public int getPriority() {
+        return priority;
+    }
 
-	public void setIpAddress(String ipAddress) {
-		this.ipAddress = ipAddress;
-	}
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
 
-	public String getWildcardMask() {
-		return wildcardMask;
-	}
+    private int priority = -1;
 
-	public void setWildcardMask(String wildcardMask) {
-		this.wildcardMask = wildcardMask;
-	}
+    public int getDeadInterval() {
+        return deadInterval;
+    }
 
-	public int getAreaId() {
-		return areaId;
-	}
+    public void setDeadInterval(int deadInterval) {
+        this.deadInterval = deadInterval;
+    }
 
-	public void setAreaId(int areaId) {
-		this.areaId = areaId;
-	}
+    public int getHelloInterval() {
+        return helloInterval;
+    }
 
-	public OspfSetting getOspfSetting() {
-		return ospfSetting;
-	}
+    public void setHelloInterval(int helloInterval) {
+        this.helloInterval = helloInterval;
+    }
 
-	public void setOspfSetting(OspfSetting ospfSetting) {
-		if(this.ospfSetting!=null){
-			setNodeFalseInstances(this.ospfSetting);
-			setNodeFalseInstances(ospfSetting);
-			setNodeFalseInstances(this);
-			setErrorStatement("エラー:["+getName()+"]と["+ospfSetting.getClassName()+"のインスタンス]の関連において、最大多重度を超えました。2個以上のオブジェクトを関連付けることはできません。");
-		}this.ospfSetting = ospfSetting;
-	}
+    public String getOspfNetworkMode() {
+        return ospfNetworkMode;
+    }
 
-	private OspfSetting ospfSetting;
+    public void setOspfNetworkMode(String ospfNetworkMode) {
+        this.ospfNetworkMode = ospfNetworkMode;
+    }
 
+    public String getStub() {
+        return stub;
+    }
+
+    public void setStub(String stub) {
+        this.stub = stub;
+    }
+
+    private int deadInterval = -1;
+    private int helloInterval = -1;
+    private String ospfNetworkMode ;
+    private String stub ;
+
+
+    public String getIpAddress() {
+        return ipAddress;
+    }
+
+    public void setIpAddress(String ipAddress) {
+        this.ipAddress = ipAddress;
+    }
+
+    public String getWildcardMask() {
+        return wildcardMask;
+    }
+
+    public void setWildcardMask(String wildcardMask) {
+        this.wildcardMask = wildcardMask;
+    }
+
+    public int getAreaId() {
+        return areaId;
+    }
+
+    public void setAreaId(int areaId) {
+        this.areaId = areaId;
+    }
+
+    public OspfSetting getOspfSetting() {
+        return ospfSetting;
+    }
+
+    public void setOspfSetting(OspfSetting ospfSetting) {
+        if (this.ospfSetting != null) {
+            setNodeFalseInstances(this.ospfSetting);
+            setNodeFalseInstances(ospfSetting);
+            setNodeFalseInstances(this);
+            setmultiplicityErrorStatement("エラー:[" + getName() + "]と[" + ospfSetting.getClassName() + "のインスタンス]の関連において、最大多重度を超えました。2個以上のオブジェクトを関連付けることはできません。");
+        }
+        this.ospfSetting = ospfSetting;
+    }
+
+    private OspfSetting ospfSetting;
 
 
 }

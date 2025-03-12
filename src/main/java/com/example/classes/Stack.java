@@ -12,11 +12,11 @@ public class Stack extends ClassElement {
     }
 
     public void setConfig(Config config) {
-        if(this.config!=null){
+        if (this.config != null) {
             setNodeFalseInstances(this.config);
             setNodeFalseInstances(config);
             setNodeFalseInstances(this);
-            setErrorStatement("エラー:["+getName()+"]と["+config.getClassName()+"のインスタンス]の関連において、最大多重度を超えました。2個以上のオブジェクトを関連付けることはできません。");
+            setmultiplicityErrorStatement("エラー:[" + getName() + "]と[" + config.getClassName() + "のインスタンス]の関連において、最大多重度を超えました。2個以上のオブジェクトを関連付けることはできません。");
         }
         this.config = config;
     }

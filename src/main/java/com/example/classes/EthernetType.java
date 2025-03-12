@@ -10,25 +10,26 @@ public class EthernetType extends ClassElement {
         return ethernetSetting;
     }
 
-    public String getType(){
-        if(Ethernet){
+    public String getType() {
+        if (Ethernet) {
             return "Ethernet";
-        }else if(fastEthernet){
+        } else if (fastEthernet) {
             return "fastEthernet";
-        }else if(tengigabitEthernet){
+        } else if (tengigabitEthernet) {
             return "10gigabitEthernet";
-        }else if(gigabitEthernet){
-            return  "gigabitEthernet";
-        }else {
+        } else if (gigabitEthernet) {
+            return "gigabitEthernet";
+        } else {
             return "";
         }
     }
+
     public void setEthernetSetting(EthernetSetting ethernetSetting) {
-        if(this.ethernetSetting!=null){
+        if (this.ethernetSetting != null) {
             setNodeFalseInstances(this.ethernetSetting);
             setNodeFalseInstances(ethernetSetting);
             setNodeFalseInstances(this);
-            setErrorStatement("エラー:["+getName()+"]と["+ethernetSetting.getClassName()+"のインスタンス]の関連において、最大多重度を超えました。2個以上のオブジェクトを関連付けることはできません。");
+            setmultiplicityErrorStatement("エラー:[" + getName() + "]と[" + ethernetSetting.getClassName() + "のインスタンス]の関連において、最大多重度を超えました。2個以上のオブジェクトを関連付けることはできません。");
         }
         this.ethernetSetting = ethernetSetting;
     }

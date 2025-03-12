@@ -34,40 +34,46 @@ public class ClassElement {
     }
 
     public void setNodeFalseInstances(ClassElement nodeFalseinstance) {
-        if(!(nodeFalseInstances.contains(nodeFalseinstance))) {
+        if (!(nodeFalseInstances.contains(nodeFalseinstance))) {
             this.nodeFalseInstances.add(nodeFalseinstance);
         }
     }
 
     private ArrayList<ClassElement> nodeFalseInstances = new ArrayList<>();//関連線が多重度や関連先の情報を満たしていない物を格納してある。
 
-    private ArrayList<String> errorStatements = new ArrayList<>();
+    /*errorStatementsが使われている箇所
+    * 「true」「false」のチェック*/
+    private ArrayList<String> multiplicityErrorStatements = new ArrayList<>();//多重度エラー　値を変換じに検出するためこうした
     private ArrayList<String> attributeErrorStatements = new ArrayList<>();
-    private   ArrayList <ClassElement> link = new java.util.ArrayList<>();
+    private ArrayList<ClassElement> link = new java.util.ArrayList<>();
 
     protected ArrayList<Slots> slots;
+
     public String getClassName() {
         return className;
+//        return "class";
     }
 
     public void setClassName(String className) {
         this.className = className;
     }
 
-   public void setName(String name){
-        this.name=name;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getName() {
         return name;
     }
 
-    public ArrayList<ClassElement> getlink(){
+    public ArrayList<ClassElement> getlink() {
         return link;
     }
-    public void setLink(ClassElement instance){
+
+    public void setLink(ClassElement instance) {
         link.add(instance);
     }
+
     public void setSlots(ArrayList<Slots> slots) {
         this.slots = slots;
     }
@@ -77,18 +83,22 @@ public class ClassElement {
     }
 
 
-    public void setErrorStatement(String errorStatement) {//エラー文
-        if(!errorStatements.contains(errorStatement)){
-            errorStatements.add(errorStatement);
+    public void setmultiplicityErrorStatement(String errorStatement) {//エラー文
+        if (!multiplicityErrorStatements.contains(errorStatement)) {
+            multiplicityErrorStatements.add(errorStatement);
         }
     }
 
 
-    public ArrayList<String> getErrorStatement() {
-        return errorStatements;
+    public ArrayList<String> getmultiplictyErrorStatement() {
+        return multiplicityErrorStatements;
     }
+
+
+
+
     public void setAttributeErrorStatement(String errorStatement) {//turuとfalseの属性チェック（AttributeInterityCheckerで使う）
-        if(!attributeErrorStatements.contains(errorStatement)){
+        if (!attributeErrorStatements.contains(errorStatement)) {
             attributeErrorStatements.add(errorStatement);
         }
     }
