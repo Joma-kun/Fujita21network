@@ -1,6 +1,8 @@
 package com.example.classes;
 
 import com.example.element.ClassElement;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
 
@@ -14,29 +16,30 @@ public class Config extends ClassElement {
         stpSetting = new ArrayList<>();
         linkedConfigs = new ArrayList<>();
     }
-
+    @JsonIgnore
     private ArrayList<Config> linkedConfigs;//Linkでつながれたコンフィグを格納しておく。隣接リスト表現 属性になし
-
+    @JsonProperty
     private String deviceModel;
-
+    @JsonIgnore
     private ArrayList<Vlan> vlan;
-
+    @JsonIgnore
     private Stack stack;
+    @JsonIgnore
     private ArrayList<AccessList> accessList;
-
+    @JsonIgnore
     private ArrayList<IpRoute> ipRoute;
-
+    @JsonIgnore
     private ArrayList<OspfSetting> ospfSettings;
 
-
+    @JsonIgnore
     private ArrayList<EthernetSetting> ethernetSetting;
-
+    @JsonIgnore
     private Hostname hostname = null;
-
+    @JsonIgnore
     private ArrayList<VlanSetting> vlanSetting;
-
+    @JsonIgnore
     private OspfSetting ospfSetting;
-
+    @JsonIgnore
     private ArrayList<StpSetting> stpSetting;
 
     public String getDeviceModel() {

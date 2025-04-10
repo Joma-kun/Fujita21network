@@ -1,12 +1,13 @@
 package com.example.classes;
 
 import com.example.element.ClassElement;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class Hostname extends ClassElement {
 
 
     private String hostname;
-
+    @JsonIgnore
     private Config config;
 
 

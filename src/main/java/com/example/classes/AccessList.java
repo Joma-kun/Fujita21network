@@ -1,6 +1,7 @@
 package com.example.classes;
 
 import com.example.element.ClassElement;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.ArrayList;
 
@@ -133,9 +134,9 @@ private boolean destIsHost;
 
     private String destPort;
 
-
+    @JsonIgnore
     private ArrayList<AccessList> accessLists = new ArrayList<>();//関連先のインスタンス
-
+    @JsonIgnore
     private Config config; //関連先のインスタンス
 
 

@@ -1,6 +1,7 @@
 package com.example.classes;
 
 import com.example.element.ClassElement;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.ArrayList;
 
@@ -21,6 +22,7 @@ public class EthernetSetting extends LinkableElement {
     }
 
     private ArrayList<Integer> allowedVlans;
+    @JsonIgnore
     private ClassElement conectedThing;//接続先のEthernetSettingかCliet 属性ではない
     private EthernetType ethernetType = null;
     private String allowdVlanString;
@@ -306,7 +308,7 @@ public class EthernetSetting extends LinkableElement {
     private boolean switchportTrunkEncapsulation;
 
     private boolean shutdown;
-
+    @JsonIgnore
     private Config config;
 
 

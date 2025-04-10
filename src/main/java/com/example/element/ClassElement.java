@@ -2,6 +2,7 @@ package com.example.element;
 
 import com.change_vision.jude.api.inf.model.IElement;
 import com.change_vision.jude.api.inf.presentation.IPresentation;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.ArrayList;
 
@@ -24,7 +25,18 @@ public class ClassElement {
         this.presentation = presentation;
     }
 
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    private String id = this.toString();
+    @JsonIgnore
     private IPresentation presentation;//astahのpresentation情報と結びつける
+    @JsonIgnore
     private IElement element;//astahの図と対応づける
     private String name; //instanceの名前　例：cf_Hn
     private String className;//classの名前　例：AccessList
@@ -38,15 +50,18 @@ public class ClassElement {
             this.nodeFalseInstances.add(nodeFalseinstance);
         }
     }
-
+    @JsonIgnore
     private ArrayList<ClassElement> nodeFalseInstances = new ArrayList<>();//関連線が多重度や関連先の情報を満たしていない物を格納してある。
 
     /*errorStatementsが使われている箇所
     * 「true」「false」のチェック*/
+    @JsonIgnore
     private ArrayList<String> multiplicityErrorStatements = new ArrayList<>();//多重度エラー　値を変換じに検出するためこうした
+    @JsonIgnore
     private ArrayList<String> attributeErrorStatements = new ArrayList<>();
+    @JsonIgnore
     private ArrayList<ClassElement> link = new java.util.ArrayList<>();
-
+    @JsonIgnore
     protected ArrayList<Slots> slots;
 
     public String getClassName() {

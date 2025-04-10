@@ -1,6 +1,7 @@
 package com.example.classes;
 
 import com.example.element.ClassElement;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class OspfInterfaceSetting extends ClassElement {
 
@@ -95,7 +96,7 @@ public class OspfInterfaceSetting extends ClassElement {
         }
         this.ospfSetting = ospfSetting;
     }
-
+    @JsonIgnore
     private OspfSetting ospfSetting;
 
 

@@ -1,6 +1,7 @@
 package com.example.classes;
 
 import com.example.element.ClassElement;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class OspfVirtualLink extends ClassElement {
 
@@ -37,7 +38,7 @@ public class OspfVirtualLink extends ClassElement {
     }
 
     private String routerId;
-
+    @JsonIgnore
     private OspfSetting ospfSetting;
 
 }

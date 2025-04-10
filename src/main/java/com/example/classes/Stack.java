@@ -1,10 +1,11 @@
 package com.example.classes;
 
 import com.example.element.ClassElement;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class Stack extends ClassElement {
     private int stackMemberNumber = -1;
-
+    @JsonIgnore
     private Config config;
 
     public Config getConfig() {

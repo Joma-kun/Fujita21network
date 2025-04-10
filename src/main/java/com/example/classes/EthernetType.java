@@ -1,6 +1,7 @@
 package com.example.classes;
 
 import com.example.element.ClassElement;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class EthernetType extends ClassElement {
     private boolean Ethernet;
@@ -33,7 +34,7 @@ public class EthernetType extends ClassElement {
         }
         this.ethernetSetting = ethernetSetting;
     }
-
+    @JsonIgnore
     private EthernetSetting ethernetSetting;
     private boolean gigabitEthernet;
 

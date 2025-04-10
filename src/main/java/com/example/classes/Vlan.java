@@ -1,6 +1,7 @@
 package com.example.classes;
 
 import com.example.element.ClassElement;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class Vlan extends ClassElement {
 
@@ -40,7 +41,7 @@ public class Vlan extends ClassElement {
             this.config = config;
         }
     }
-
+    @JsonIgnore
     private Config config;
 
 }

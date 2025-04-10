@@ -1,5 +1,7 @@
 package com.example.classes;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class Clients extends LinkableElement {
 
     private String name;
@@ -9,7 +11,7 @@ public class Clients extends LinkableElement {
     private int subnetMask;
 
     private String defaultGateway;
-
+    @JsonIgnore
     private Link link;
 
 

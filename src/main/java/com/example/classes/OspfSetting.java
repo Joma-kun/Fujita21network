@@ -1,6 +1,7 @@
 package com.example.classes;
 
 import com.example.element.ClassElement;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.ArrayList;
 
@@ -9,7 +10,9 @@ public class OspfSetting extends ClassElement {
     private int processId;
 
     private Config config;
+    @JsonIgnore
     private ArrayList<OspfInterfaceSetting> ospfInterfaceSettings;
+    @JsonIgnore
     private ArrayList<OspfVirtualLink> ospfVirtualLinks;
 
     public OspfSetting() {
@@ -77,7 +80,7 @@ public class OspfSetting extends ClassElement {
 
 
 
-
+    @JsonIgnore
     private ArrayList<OspfVirtualLink> ospfVirtualLink;
 
 }

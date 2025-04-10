@@ -26,7 +26,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 public class Check {
+    protected static ArrayList<ErrorInfo> errorInfos = new ArrayList<>();
+    public Check(ArrayList<ErrorInfo> errorInfos) {//JSON出力のためのコンストラクタ
+        this.errorInfos=errorInfos;
+    }
 //    //                        1023行目当たりの    ここに色を変える処理を追加する　をやる
+
+    //要編集と書いてあるところをする
+
+
 
     /*実装するしたもの　メソッド名と内容
     * nodeCheck 関連の多重度チェック
@@ -103,7 +111,10 @@ public class Check {
             if (instance instanceof Link) {//Linkクラスのインスタンスの時
                 if (((Link) instance).getLinkableElement().size() != 2) {
                     changeColor(instance, red);
-                    errorStatement.add(instance.getName()+"：リンクは二つの関連を持ちます");
+                    String message = instance.getName()+"：リンクは二つの関連を持ちます";
+                    errorInfos.add(new ErrorInfo(message, true, "関連チェック",mapOf(instance.getId(), null) ));//JSONを作るための処理
+                    errorStatement.add(message);
+
                 }
             }
             //必ず指定された関連先を持ち、多重度を満たすことを検証する
@@ -138,7 +149,9 @@ public class Check {
         if (removeinstances.size() != 0) {
             for (ClassElement instance : removeinstances) {
                 changeColor(instance, red);
-                notLinkErrorStatements.add(instance.getName() + "が関連を持っていません");
+                String message = instance.getName() + "が関連を持っていません";
+                errorInfos.add(new ErrorInfo(message, true, "関連無し",mapOf(instance.getId(), null) ));//JSONを作るための処理
+                notLinkErrorStatements.add(message);
 
             }
             for (String notLinkerrorstatement : notLinkErrorStatements) {
@@ -282,6 +295,11 @@ public class Check {
                         if (vlan1 == vlan2) {//IPの重複かつVLANの重複
 
                             ;//エラー文の追加
+                            String message = "同じVLANに属している" + clientIpAddresslistInstance.get(i).getName() + "と" + clientIpAddresslistInstance.get(j).getName() + "のIPアドレスが重複しています。";
+                            Map<String,String> ins = new HashMap<>();
+                            ins.put(clientIpAddresslistInstance.get(i).getId(),"ipAddress");
+                            ins.put(clientIpAddresslistInstance.get(i).getId(),"ipAddress");
+                            errorInfos.add(new ErrorInfo(message, false, "IPアドレスの重複（Client間,同一VLAN内）",ins));//JSONを作るための処理
                             ipErrorStatements.add("同じVLANに属している" + clientIpAddresslistInstance.get(i).getName() + "と" + clientIpAddresslistInstance.get(j).getName() + "のIPアドレスが重複しています。");
                             try {
                                 changeColor(clientIpAddresslistInstance.get(i), orangered);//色の切り替え
@@ -294,7 +312,14 @@ public class Check {
 
                         //両方VLAN設定がないかつIPの重複　→　エラー
                         else if ((vlan1 == -1) && (vlan2 == -2)) {
-                            ipErrorStatements.add("同一セグメント内の" + clientIpAddresslistInstance.get(i).getName() + "と" + clientIpAddresslistInstance.get(j).getName() + "のIPアドレスが重複しています。");//エラー文の追加
+
+                            Map<String,String> ins = new HashMap<>();
+                            ins.put(clientIpAddresslistInstance.get(i).getId(),"ipAddress");
+                            ins.put(clientIpAddresslistInstance.get(j).getId(),"ipAddress");
+                            String message = "同一セグメント内の" + clientIpAddresslistInstance.get(i).getName() + "と" + clientIpAddresslistInstance.get(j).getName() + "のIPアドレスが重複しています。";
+                            errorInfos.add(new ErrorInfo(message, false, "IPアドレスの重複（Client間、同一セグメント内（VLAN設定無し））",ins));//JSONを作るための処理
+
+                            ipErrorStatements.add(message);//エラー文の追加
                             try {
                                 changeColor(clientIpAddresslistInstance.get(i), orangered);//色の切り替え
                                 changeColor(clientIpAddresslistInstance.get(j), orangered);
@@ -305,7 +330,17 @@ public class Check {
 
                         //片方だけVLAN設定しているかVLANがちがうとき　→　警告
                         if ((vlan1 == -1 && vlan2 != -2) || (vlan1 != -1 && vlan2 == -2)) {//片方だけVLAN設定
-                            ipWarningStatements.add(clientIpAddresslistInstance.get(i).getName() + "と" + clientIpAddresslistInstance.get(j).getName() + "のIPアドレスが重複しています。");
+
+
+                            Map<String,String> ins = new HashMap<>();
+                            ins.put(clientIpAddresslistInstance.get(i).getId(),"ipAddress");
+                            ins.put(clientIpAddresslistInstance.get(j).getId(),"ipAddress");
+
+                            String message = clientIpAddresslistInstance.get(i).getName() + "と" + clientIpAddresslistInstance.get(j).getName() + "のIPアドレスが重複しています。";
+                            errorInfos.add(new ErrorInfo(message, false, "IPアドレスの重複（Client間、異なるセグメント間,片方だけVLAN設定）",ins));//JSONを作るための処理
+
+
+                            ipWarningStatements.add(message);
                             try {
                                 changeColor(clientIpAddresslistInstance.get(i), orangered);//色の切り替え
                                 changeColor(clientIpAddresslistInstance.get(j), orangered);
@@ -314,6 +349,12 @@ public class Check {
                             }
                         }//VLANが違う時
                         if (vlan1 != -1 && vlan2 != -2 && vlan1 != vlan2) {
+                            Map<String,String> ins = new HashMap<>();
+                            ins.put(clientIpAddresslistInstance.get(i).getId(),"ipAddress");
+                            ins.put(clientIpAddresslistInstance.get(j).getId(),"ipAddress");
+                            String message = clientIpAddresslistInstance.get(i).getName() + "と" + clientIpAddresslistInstance.get(j).getName() + "のIPアドレスが重複しています。";
+                            errorInfos.add(new ErrorInfo(message, false, "IPアドレスの重複（Client間、異なるセグメント間,異なるVLAN）",ins));//JSONを作るための処理
+
                             ipWarningStatements.add(clientIpAddresslistInstance.get(i).getName() + "と" + clientIpAddresslistInstance.get(j).getName() + "のIPアドレスが重複しています。");
                             try {
                                 changeColor(clientIpAddresslistInstance.get(i), orangered);//色の切り替え
@@ -342,7 +383,14 @@ public class Check {
                 if (!ethernetIpAddress2.equals("") && !ethernetIpAddress1.equals("")) {
                     if (ethernetIpAddress1.equals(ethernetIpAddress2)) {
 
-                        ipErrorStatements.add(ethernetIpAddresslistInstance.get(eth1).getName() + "と" + ethernetIpAddresslistInstance.get(eth2).getName() + "のIPアドレスが重複しています。");//エラー文の追加
+                        Map<String,String> ins = new HashMap<>();
+                        ins.put(ethernetIpAddresslistInstance.get(eth1).getId(),"ipAddress");
+                        ins.put(ethernetIpAddresslistInstance.get(eth2).getId(),"ipAddress");
+                        String message = ethernetIpAddresslistInstance.get(eth1).getName() + "と" + ethernetIpAddresslistInstance.get(eth2).getName() + "のIPアドレスが重複しています。";
+                        errorInfos.add(new ErrorInfo(message, false, "IPアドレスの重複（EthernetSetting間）",ins));//JSONを作るための処理
+
+
+                        ipErrorStatements.add(message);//エラー文の追加
                         try {
 
                             changeColor(ethernetIpAddresslistInstance.get(eth1), orangered);//色の切り替え
@@ -532,9 +580,24 @@ public class Check {
                                 }
                             }
                             if(ok){
-                                ipErrorStatements.add("同じセグメントのVLANに属している" + vlanSettingIpAddresslistInstance.get(vl1).getName() + "と" + vlanSettingIpAddresslistInstance.get(vl2).getName() + "のIPアドレスが重複しています。");//エラー文の追加
+                                Map<String,String> ins = new HashMap<>();
+                                ins.put(vlanSettingIpAddresslistInstance.get(vl1).getId(),"ipAddress");
+                                ins.put(vlanSettingIpAddresslistInstance.get(vl2).getId(),"ipAddress");
+
+                                String message = "同じセグメントのVLANに属している" + vlanSettingIpAddresslistInstance.get(vl1).getName() + "と" + vlanSettingIpAddresslistInstance.get(vl2).getName() + "のIPアドレスが重複しています。";
+                                errorInfos.add(new ErrorInfo(message, false, "IPアドレスの重複（VlanSetting、同一VLAN）",ins));//JSONを作るための処理
+
+
+                                ipErrorStatements.add(message);//エラー文の追加
                             }else{
-                                ipWarningStatements.add("異なるセグメントのVLANに属している" + vlanSettingIpAddresslistInstance.get(vl1).getName() + "と" + vlanSettingIpAddresslistInstance.get(vl2).getName() + "のIPアドレスが重複しています。");//エラー文の追加
+                                Map<String,String> ins = new HashMap<>();
+                                ins.put(vlanSettingIpAddresslistInstance.get(vl1).getId(),"ipAddress");
+                                ins.put(vlanSettingIpAddresslistInstance.get(vl2).getId(),"ipAddress");
+
+                                String message = "異なるセグメントのVLANに属している" + vlanSettingIpAddresslistInstance.get(vl1).getName() + "と" + vlanSettingIpAddresslistInstance.get(vl2).getName() + "のIPアドレスが重複しています。";
+                                errorInfos.add(new ErrorInfo(message, false, "IPアドレスの重複（VlanSetting、異なるVLAN）",ins));//JSONを作るための処理
+
+                                ipWarningStatements.add(message);//エラー文の追加
 
                             }
 //                            System.out.println("configlist1");
@@ -560,7 +623,15 @@ public class Check {
 
                         //違うVLANIDかつIPの重複→警告
                         else {
-                            ipWarningStatements.add(vlanSettingIpAddresslistInstance.get(vl1).getName() + "と" + vlanSettingIpAddresslistInstance.get(vl2).getName() + "のIPアドレスが重複しています。");//エラー文の追加
+
+                            Map<String,String> ins = new HashMap<>();
+                            ins.put(vlanSettingIpAddresslistInstance.get(vl1).getId(),"ipAddress");
+                            ins.put(vlanSettingIpAddresslistInstance.get(vl2).getId(),"ipAddress");
+
+                            String message = vlanSettingIpAddresslistInstance.get(vl1).getName() + "と" + vlanSettingIpAddresslistInstance.get(vl2).getName() + "のIPアドレスが重複しています。";
+                            errorInfos.add(new ErrorInfo(message, false, "IPアドレスの重複（VlanSetting、異なるVLAN）",ins));//JSONを作るための処理
+
+                            ipWarningStatements.add(message);//エラー文の追加
                             try {
                                 changeColor(vlanSettingIpAddresslistInstance.get(vl1), orangered);//色の切り替え
                                 changeColor(vlanSettingIpAddresslistInstance.get(vl2), orangered);
@@ -608,7 +679,17 @@ public class Check {
 
                             //sameNetworkがfalseの時は違うネットワークに属している。
                             if (sameNetwork) {
-                                ipWarningStatements.add("違うVLANに属している" + vlanSettingIpAddresslistInstance.get(vl1).getName() + "と" + vlanSettingIpAddresslistInstance.get(vl2).getName() + "のネットワークアドレスが重複しています");//エラー文の追加
+
+                                Map<String,String> ins = new HashMap<>();
+                                ins.put(vlanSettingIpAddresslistInstance.get(vl1).getId(),"ipAddress");
+                                ins.put(vlanSettingIpAddresslistInstance.get(vl2).getId(),"ipAddress");
+                                ins.put(vlanSettingIpAddresslistInstance.get(vl1).getId(),"subNetMask");
+                                ins.put(vlanSettingIpAddresslistInstance.get(vl2).getId(),"subNetMask");
+
+                                String message = "違うVLANに属している" + vlanSettingIpAddresslistInstance.get(vl1).getName() + "と" + vlanSettingIpAddresslistInstance.get(vl2).getName() + "のネットワークアドレスが重複しています";
+                                errorInfos.add(new ErrorInfo(message, false, "異なるVLANかつサブネットの重複",ins));//JSONを作るための処理
+
+                                ipWarningStatements.add(message);//エラー文の追加
                                 try {
                                     changeColor(vlanSettingIpAddresslistInstance.get(vl1), orangered);//色の切り替え
                                     changeColor(vlanSettingIpAddresslistInstance.get(vl2), orangered);
@@ -637,7 +718,14 @@ public class Check {
                 if (!allIpAddress2.equals("") && !allIpAddress1.equals("")) {
                     if (allIpAddress1.equals(allIpAddress2)) {
                         if (!ipAddresslistInstance.get(ip1).getClassName().equals(ipAddresslistInstance.get(ip2).getClassName())) {
-                            allduplicationWarningStatements.add(ipAddresslistInstance.get(ip1).getName() + "と" + ipAddresslistInstance.get(ip2).getName() + "のIPアドレスが重複しています");
+                            Map<String,String> ins = new HashMap<>();
+                            ins.put(ipAddresslistInstance.get(ip1).getId(),"ipAddress");
+                            ins.put(ipAddresslistInstance.get(ip1).getId(),"ipAddress");
+
+                            String message = ipAddresslistInstance.get(ip1).getName() + "と" + ipAddresslistInstance.get(ip2).getName() + "のIPアドレスが重複しています";
+                            errorInfos.add(new ErrorInfo(message, false, "IPアドレスの重複（異なるクラス）",ins));//JSONを作るための処理
+
+                            allduplicationWarningStatements.add(message);
                             try {
                                 changeColor(ipAddresslistInstance.get(ip1), orangered);//色の切り替え
                                 changeColor(ipAddresslistInstance.get(ip2), orangered);
@@ -669,7 +757,13 @@ public class Check {
                     String configIpAddress2 = configIpAddressList.get(sa2);
                     if (!configIpAddress2.equals("") && !configIpAddress1.equals("")) {
                         if (configIpAddress1.equals(configIpAddress2)) {
-                            ipErrorStatements.add("同一機器に設定されている" + configIpAddresslistInstance.get(sa1).getName() + "と" + configIpAddresslistInstance.get(sa2).getName() + "のIPアドレスが重複しています");
+                            Map<String,String> ins = new HashMap<>();
+                            ins.put(configIpAddresslistInstance.get(sa1).getId(),"ipAddress");
+                            ins.put(configIpAddresslistInstance.get(sa2).getId(),"ipAddress");
+
+                            String message = "同一機器に設定されている" + configIpAddresslistInstance.get(sa1).getName() + "と" + configIpAddresslistInstance.get(sa2).getName() + "のIPアドレスが重複しています";
+                            errorInfos.add(new ErrorInfo(message, true, "同一機器内でのIPアドレスの重複",ins));//JSONを作るための処理
+                            ipErrorStatements.add(message);
                             try {
                                 changeColor(configIpAddresslistInstance.get(sa1), red);//色の切り替え
                                 changeColor(configIpAddresslistInstance.get(sa2), red);
@@ -731,17 +825,23 @@ public class Check {
                 //vlanに値を入れなかったら値は0になる。
                 //Mode記入無しだが、トランクかアクセスに記入がある
                 if ((ethernetSeting.getMode().isEmpty()) && ((ethernetSeting.getAccessVlan() != -1) || (ethernetSeting.getNativeVlan() != -1))) {
-                    errorStatements.add(ethernetSeting.getName() + "のModeが空白です");
+                    String message =ethernetSeting.getName() + "のModeが空白です" ;
+                    errorInfos.add(new ErrorInfo(message, true, "Mode記入無しかつトランクかアクセスに値あり",mapOf(ethernetSeting.getId(), "mode") ));//JSONを作るための処理
+                    errorStatements.add(message);
                     changeColor(ethernetSeting,red);
                 }
                 //Mode記入があるがnativeVLANに記入がない
                 else if ((ethernetSeting.getMode().equals("trunk")) && ethernetSeting.getNativeVlan() == -1) {
-                    errorStatements.add(ethernetSeting.getName() + "のnativeVlanが空白です");
+                    String message = ethernetSeting.getName() + "のnativeVlanが空白です";
+                    errorInfos.add(new ErrorInfo(message, true, "Mode記入があるがnativeVLANに記入がない",mapOf(ethernetSeting.getId(), "nativeVlan") ));//JSONを作るための処理
+                    errorStatements.add(message);
                     changeColor(ethernetSeting,red);
                 }
                 //Mode記入があるがアクセスに記入がない
                 else if ((ethernetSeting.getMode().equals("access")) && ethernetSeting.getAccessVlan() == -1) {
-                    errorStatements.add(ethernetSeting.getName() + "のaccessVlanが空白です");
+                    String message = ethernetSeting.getName() + "のaccessVlanが空白です";
+                    errorInfos.add(new ErrorInfo(message, true, "Mode記入があるがアクセスに記入がな",mapOf(ethernetSeting.getId(), "accessVlan") ));//JSONを作るための処理
+                    errorStatements.add(message);
                     changeColor(ethernetSeting,red);
                 }
                 //allowedVlanが一致しない
@@ -766,7 +866,9 @@ public class Check {
                         }
                         if (allowedVlanfuItti) {
                             if(!warningStatements.contains(ethernetSeting.getName() + "で作成されていないvlanが許可されています．")) {
-                                warningStatements.add(ethernetSeting.getName() + "で作成されていないvlanが許可されています．");
+                                String message = ethernetSeting.getName() + "で作成されていないvlanが許可されています．";
+                                errorInfos.add(new ErrorInfo(message, false, "作成されていないVLANの許可",mapOf(ethernetSeting.getId(), "allowedVlan") ));//JSONを作るための処理
+                                warningStatements.add(message);
                             }
                             changeColor(ethernetSeting,orangered);
                         }
@@ -798,7 +900,12 @@ public class Check {
                     Collections.sort(oppsingAcitiveAllowedVlan);
                     if (!acitiveAllowedVlan.equals(oppsingAcitiveAllowedVlan) && ethernetSeting.getConectedThing()!=null) {
                         if (!warningStatements.contains(ethernetSeting.getName() + "と" + ((ethernetSeting).getConectedThing()).getName() + "の転送許可VLANが一致しません．VLANインスタンスやallowedVlanの値が誤っている可能性があります．") && !warningStatements.contains(((EthernetSetting)ethernetSeting).getConectedThing().getName() + "と" + ethernetSeting.getName() + "の転送許可VLANが一致しません．VLANインスタンスやallowedVlanの値が誤っている可能性があります．")) {
-                            warningStatements.add(ethernetSeting.getName() + "と" + ((ethernetSeting).getConectedThing()).getName() + "の転送許可VLANが一致しません．VLANインスタンスやallowedVlanの値が誤っている可能性があります．");
+                            String message = ethernetSeting.getName() + "と" + ((ethernetSeting).getConectedThing()).getName() + "の転送許可VLANが一致しません．VLANインスタンスやallowedVlanの値が誤っている可能性があります．";
+                            Map<String,String> ins = new HashMap<>();
+                            ins.put(ethernetSeting.getId(),"allowedVlan");
+                            ins.put(((EthernetSetting) ethernetSeting).getConectedThing().getId(),"allowedVlan");
+                            errorInfos.add(new ErrorInfo(message, false, "転送許可VLANの不一致",ins));//JSONを作るための処理
+                            warningStatements.add(message);
                         }
                          Check.changeColor(ethernetSeting, orangered);
                         Check.changeColor(((EthernetSetting) ethernetSeting).getConectedThing(), orangered);
@@ -838,7 +945,14 @@ public class Check {
                         if (myaccessvlan != 0 && anotheraccessVlan != 0) {
                             if (myaccessvlan != anotheraccessVlan) {
                                 if (!warningStatements.contains(ethernetSeting.getName() + "と" + ((EthernetSetting) ((EthernetSetting) ethernetSeting).getConectedThing()).getName() + "のaccessVlanが一致しません") && !warningStatements.contains(((EthernetSetting) ((EthernetSetting) ethernetSeting).getConectedThing()).getName() + "と" + ethernetSeting.getName() + "のaccessVlanが一致しません")) {
-                                    warningStatements.add(ethernetSeting.getName() + "と" + ((EthernetSetting) ((EthernetSetting) ethernetSeting).getConectedThing()).getName() + "のaccessVlanが一致しません");
+
+                                    Map<String,String> ins = new HashMap<>();
+                                    ins.put(ethernetSeting.getId(),"accessVlan");
+                                    ins.put(((EthernetSetting) ethernetSeting).getConectedThing().getId(),"accessVlan");
+
+                                    String message = ethernetSeting.getName() + "と" + ((EthernetSetting) ((EthernetSetting) ethernetSeting).getConectedThing()).getName() + "のaccessVlanが一致しません";
+                                    errorInfos.add(new ErrorInfo(message, false, "accessVlanの不一致",ins));//JSONを作るための処理
+                                    warningStatements.add(message);
                                     changeColor(ethernetSeting,orangered);
                                     changeColor(((EthernetSetting) ((EthernetSetting) ethernetSeting).getConectedThing()),orangered);
                                 }
@@ -1018,8 +1132,10 @@ public class Check {
 //                    System.out.println("configList"+sameConfig.getName());
                     if (!conectedConfigList.contains(sameConfig)) {
                         if (!vlanWarningStatement.contains("VLAN" + number + "が重複してます")) {
-                            vlanWarningStatement.add("VLAN" + number + "が重複してます");
-//                            ここに色を変える処理を追加する
+                            String message = "VLAN" + number + "が重複してます";
+                            errorInfos.add(new ErrorInfo(message, false, "VLANの重複", null));//JSONを作るための処理
+                            vlanWarningStatement.add(message);
+//                            ここに色を変える処理を追加する 要編集
                         }
                     }
                 }
@@ -1097,14 +1213,19 @@ public class Check {
                         }
                         if (!sameNetwork) {//sameNetworkがfalseの時は違うネットワークに属している。
                             if (!vlanWarningStatement.contains("VLAN" + number2 + "内で異なるネットワークアドレスが割り当てられています。")) {
-                                vlanWarningStatement.add("VLAN" + number2 + "内で異なるネットワークアドレスが割り当てられています。");
+                                String message = "VLAN" + number2 + "内で異なるネットワークアドレスが割り当てられています。";
+                                vlanWarningStatement.add(message);
+                                Map<String,String> ins = new HashMap<>();
                                 for (VlanSetting vlanSetting3 : duplicationVlanSettingNumber) {
                                     try {
                                         Check.changeColor(vlanSetting3, orangered);
+                                        ins.put(vlanSetting3.getId(),"ipAddress");
+                                        ins.put(vlanSetting3.getId(),"subNetMask");
                                     } catch (InvalidEditingException e) {
                                         throw new RuntimeException(e);
                                     }
                                 }
+                                errorInfos.add(new ErrorInfo(message, false, "同一VLAN内でことなるネットワークの割り当て",ins));//JSONを作るための処理
                             }
                         }
                     }
@@ -1125,7 +1246,9 @@ public class Check {
         for(ClassElement instance : instances){
             if(instance instanceof  EthernetSetting){
                 if(((EthernetSetting) instance).getPort()==-1){
-                    errorStatements.add(instance.getName() + "のportを設定して下さい");//エラー文の追加
+                    String message = instance.getName() + "のportを設定して下さい";
+                    errorInfos.add(new ErrorInfo(message, true, "portの未設定",mapOf(instance.getId(), "port") ));//JSONを作るための処理
+                    errorStatements.add(message);//エラー文の追加
                     try {
 
                         changeColor(instance, red);//色の切り替え
@@ -1137,7 +1260,9 @@ public class Check {
 //                System.out.println(instance.getName()+":" + ((EthernetSetting) instance).getShutdown()
 //                );
                 if(((EthernetSetting) instance).getShutdown() && ((EthernetSetting) instance).getLink()!=null){
-                    warningStatements.add(instance.getName()+"がshutdownされています");
+                    String message = instance.getName()+"がshutdownされています";
+                    errorInfos.add(new ErrorInfo(message, false, "",mapOf(instance.getId(), "shutdown") ));//JSONを作るための処理
+                    warningStatements.add(message);
 
                     try {
 
@@ -1150,7 +1275,10 @@ public class Check {
 
                 //未使用インターフェースの有効化
                 if(((EthernetSetting) instance).getLink()==null && !((EthernetSetting) instance).getShutdown()){
-                    warningStatements.add(instance.getName()+"が使用されていないがポートが有効化されています");
+                    String message = instance.getName()+"が使用されていないポートが有効化されています";
+                    errorInfos.add(new ErrorInfo(message, false, "使用されていないポートの有効化",mapOf(instance.getId(), "shutdown") ));//JSONを作るための処理
+                    warningStatements.add(message);
+
                     try {
                         changeColor(instance, orangered);//色の切り替え
                     } catch (InvalidEditingException e) {
@@ -1162,7 +1290,9 @@ public class Check {
 
             if(instance instanceof Vlan){
                 if(((Vlan) instance).getNum()==-1){
-                    errorStatements.add(instance.getName() + "のnumを設定して下さい");//エラー文の追加
+                    String message = instance.getName() + "のnumを設定して下さい";
+                    errorInfos.add(new ErrorInfo(message, false, "VLANのnumの未設定",mapOf(instance.getId(), "num") ));//JSONを作るための処理
+                    errorStatements.add(message);//エラー文の追加
                     try {
 
                         changeColor(instance, red);//色の切り替え
@@ -1175,7 +1305,9 @@ public class Check {
 
             if(instance instanceof VlanSetting){
                 if(((VlanSetting) instance).getVlanNum()==-1){
-                    errorStatements.add(instance.getName() + "のvlanNumを設定して下さい");//エラー文の追加
+                    String message = instance.getName() + "のvlanNumを設定して下さい";
+                    errorInfos.add(new ErrorInfo(message, false, "VlanSettingのVlannumの未設定",mapOf(instance.getId(), "vlanNum") ));//JSONを作るための処理
+                    errorStatements.add(message);//エラー文の追加
                     try {
 
                         changeColor(instance, red);//色の切り替え
@@ -1198,7 +1330,14 @@ public class Check {
                     //speed
                     if(!ethernetSetting.getSpeed().equals(((EthernetSetting) ethernetSetting.getConectedThing()).getSpeed())){
                         if (!warningStatements.contains(ethernetSetting.getName() + "と" + ((ethernetSetting).getConectedThing()).getName() + "のspeedが一致しません") && !warningStatements.contains(((EthernetSetting)ethernetSetting).getConectedThing().getName() + "と" + ethernetSetting.getName() + "のspeedが一致しません")) {
-                            warningStatements.add(ethernetSetting.getName() + "と" + ((ethernetSetting).getConectedThing()).getName() + "のspeedが一致しません．");
+                            Map<String,String> ins = new HashMap<>();
+                            ins.put(ethernetSetting.getId(),"speed");
+                            ins.put(((ethernetSetting).getConectedThing()).getId(),"speed");
+
+                            String message = ethernetSetting.getName() + "と" + ((ethernetSetting).getConectedThing()).getName() + "のspeedが一致しません．";
+                            errorInfos.add(new ErrorInfo(message, false, "",ins));//JSONを作るための処理
+
+                            warningStatements.add(message);
                         }
                         try {
                             Check.changeColor(ethernetSetting, orangered);
@@ -1210,7 +1349,13 @@ public class Check {
                     //duplex
                     if(!ethernetSetting.getDuplex().equals(((EthernetSetting) ethernetSetting.getConectedThing()).getDuplex())){
                         if (!warningStatements.contains(ethernetSetting.getName() + "と" + ((ethernetSetting).getConectedThing()).getName() + "のduplexが一致しません") && !warningStatements.contains(((EthernetSetting)ethernetSetting).getConectedThing().getName() + "と" + ethernetSetting.getName() + "のduplexが一致しません")) {
-                            warningStatements.add(ethernetSetting.getName() + "と" + ((ethernetSetting).getConectedThing()).getName() + "のduplexが一致しません");
+                            Map<String,String> ins = new HashMap<>();
+                            ins.put(ethernetSetting.getId(),"duplex");
+                            ins.put(((ethernetSetting).getConectedThing()).getId(),"duplex");
+
+                            String message = ethernetSetting.getName() + "と" + ((ethernetSetting).getConectedThing()).getName() + "のduplexが一致しません";
+                            errorInfos.add(new ErrorInfo(message, false, "duplexの不一致",ins));//JSONを作るための処理
+                            warningStatements.add(message);
                         }
                         try {
                             Check.changeColor(ethernetSetting, orangered);
@@ -1368,15 +1513,19 @@ public class Check {
 //            textArea.append(statement);
             warningStatement.add(statement);
         }
+        Map<String,String> ins = new HashMap<>();
         for (ArrayList<Config> coo : rupeconfigs) {
             for (Config rupes : coo) {
                 try {
                     changeColor((ClassElement) rupes, orangered);
+                    ins.put(rupes.getId(),null);
                 } catch (InvalidEditingException e) {
                     throw new RuntimeException(e);
                 }
             }
         }
+        String message = "がループ構成になっています";
+        errorInfos.add(new ErrorInfo(message, false, "ループの検出",ins));//JSONを作るための処理
 
 
         return rupeconfigs;
@@ -1386,17 +1535,40 @@ public class Check {
         for(ClassElement instance : instances){
             if(instance instanceof EthernetSetting){
                 if(((EthernetSetting) instance).getPort()==-1){
-                    errorStatements.add(instance.getName() + "のportの値が設定されていません");
+                    String message = instance.getName() + "のportの値が設定されていません";
+                    errorInfos.add(new ErrorInfo(message, true, "portの未設定",mapOf(instance.getId(), "port") ));//JSONを作るための処理
+                    errorStatements.add(message);
+                    try {
+                        changeColor(instance, red);
+                    } catch (InvalidEditingException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
             if(instance instanceof VlanSetting){
                 if(((VlanSetting) instance).getVlanNum() == -1){
-                    errorStatements.add(instance.getName() + "のvlanNumの値が設定されていません");
+                    String message = instance.getName() + "のvlanNumの値が設定されていません";
+                    errorInfos.add(new ErrorInfo(message, true, "vlanNumの未設定",mapOf(instance.getId(), "vlanNum") ));//JSONを作るための処理
+                    errorStatements.add(message);
+
+                    try {
+                        changeColor(instance, red);
+                    } catch (InvalidEditingException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
             if(instance instanceof Vlan){
                 if(((Vlan) instance).getNum()==-1){
-                    errorStatements.add(instance.getName() + "のnumの値が設定されていません");
+                    String message = instance.getName() + "のnumの値が設定されていません";
+                    errorInfos.add(new ErrorInfo(message, true, "numの未設定",mapOf(instance.getId(), "num") ));//JSONを作るための処理
+                    errorStatements.add(message);
+
+                    try {
+                        changeColor(instance, red);
+                    } catch (InvalidEditingException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
         }
@@ -1438,7 +1610,9 @@ public class Check {
                         //両方のmodeにトランクが入力され、NativeVLANが設定されていることを確かめる
                         if (((EthernetSetting) classElement).getNativeVlan() == -1) {//ModeがtrunkなのにNativeVLANが設定されていない
                             if (!nativevlanWarningStatement.contains(classElement.getName() + "のnativeVlanが設定されていません")) {
-                                nativevlanWarningStatement.add(classElement.getName() + "のnativeVlanが設定されていません");
+                                String message = classElement.getName() + "のnativeVlanが設定されていません";
+                                errorInfos.add(new ErrorInfo(message, false, "nativeVlanの未設定",mapOf(classElement.getId(), "nativeVlan") ));//JSONを作るための処理
+                                nativevlanWarningStatement.add(message);
                                 try {
                                     changeColor(classElement, orangered);
                                 } catch (InvalidEditingException e) {
@@ -1449,7 +1623,9 @@ public class Check {
 
                         if (conectedEthernetSetting.getMode().equals("trunk") && conectedEthernetSetting.getNativeVlan() == -1) {//ModeがtrunkなのにNativeVLANが設定されていない
                             if (!nativevlanWarningStatement.contains(conectedEthernetSetting.getName() + "のnativeVlanが設定されていません")) {
-                                nativevlanWarningStatement.add(conectedEthernetSetting.getName() + "のnativeVlanが設定されていません");
+                                String message = conectedEthernetSetting.getName() + "のnativeVlanが設定されていません";
+                                errorInfos.add(new ErrorInfo(message, false, "nativeVlanの未設定",mapOf(classElement.getId(), "nativeVlan") ));//JSONを作るための処理
+                                nativevlanWarningStatement.add(message);
                                 try {
                                     changeColor(conectedEthernetSetting, orangered);
                                 } catch (InvalidEditingException e) {
@@ -1459,7 +1635,13 @@ public class Check {
                         }
                         if (conectedEthernetSetting.getMode().equals("access")) {//Modeがtrunkなのに対向のMODEが違う
                             if (!nativevlanWarningStatement.contains(classElement.getName() + "と" + conectedEthernetSetting.getName() + "のmodeが一致しません")) {
-                                nativevlanWarningStatement.add(classElement.getName() + "と" + conectedEthernetSetting.getName() + "のmodeが一致しません");
+                                Map<String,String> ins = new HashMap<>();
+                                ins.put(classElement.getId(),"mdoe");
+                                ins.put(conectedEthernetSetting.getId(),"mode");
+
+                                String message = classElement.getName() + "と" + conectedEthernetSetting.getName() + "のmodeが一致しません";
+                                errorInfos.add(new ErrorInfo(message, false, "",ins));//JSONを作るための処理
+                                nativevlanWarningStatement.add(message);
                                 try {
                                     changeColor(classElement, orangered);
                                     changeColor(conectedEthernetSetting, orangered);
@@ -1472,10 +1654,17 @@ public class Check {
 
                         if (((EthernetSetting) classElement).getMode().equals("trunk") && conectedEthernetSetting.getMode().equals("trunk") && myNativeVlan != conectedNativeVlan) {
                             if (!nativevlanErrorStatement.contains(classElement.getName() + "と" + conectedEthernetSetting.getName() + "のNativeVlanが一致していません") && !nativevlanErrorStatement.contains(conectedEthernetSetting.getName() + "と" + classElement.getName() + "のNativeVlanが一致していません")) {
-                                nativevlanErrorStatement.add(classElement.getName() + "と" + conectedEthernetSetting.getName() + "のNativeVlanが一致していません");
+
+                                Map<String,String> ins = new HashMap<>();
+                                ins.put(classElement.getId(),"nativeVlan");
+                                ins.put(conectedEthernetSetting.getId(),"nativeVlan");
+
+                                String message = classElement.getName() + "と" + conectedEthernetSetting.getName() + "のNativeVlanが一致していません";
+                                errorInfos.add(new ErrorInfo(message, false, "",ins));//JSONを作るための処理
+                                nativevlanErrorStatement.add(message);
                                 try {
-                                    changeColor(classElement, red);
-                                    changeColor(conectedEthernetSetting, red);
+                                    changeColor(classElement,   orangered);
+                                    changeColor(conectedEthernetSetting, orangered);
                                 } catch (InvalidEditingException e) {
                                     throw new RuntimeException(e);
                                 }
@@ -1543,7 +1732,7 @@ public class Check {
         Check.dfs(Check.graphChange(conf), seen, v);
 
     }
-//stpについてはすべて確認する必要がある
+//stpについてはすべて確認する必要がある //要編集　表に追加
     /*警告　５
     * エラー　５*/
 public static void stpCheck(ArrayList<ClassElement> instances,ArrayList<ArrayList<Config>> rupeConfigs, TextArea textArea,ArrayList<String> stpErrorStatement,ArrayList<String> stpWarningStatement){
@@ -1831,8 +2020,9 @@ public static void stpCheck(ArrayList<ClassElement> instances,ArrayList<ArrayLis
 
     //OSPFInterfaceSettingで指定したネットワークアドレスが存在しない場合
     //片方のみOspfInterfaceSettingが設定されている場合警告文を出す。
-
     //OspfinterfaceSettingにあるipAddressの重複も追加する（必ず）記載2025年3月1日
+
+    //表の追加　ここから
     public static void osfpCheck(ArrayList<ClassElement> instances,TextArea textArea,ArrayList<String> ospfErrorStatement,ArrayList<String> ospfWarningStatement) {
         System.out.println("ospfCheck開始");
         ArrayList<EthernetSetting> ospfEthernetSetting = new ArrayList<>();//図にあるOSPFに関するEhternetSettingインスタンスを全て格納していく
@@ -1872,7 +2062,9 @@ public static void stpCheck(ArrayList<ClassElement> instances,ArrayList<ArrayLis
                         //片方のみnullのとき ここから　*1
                         if ((otherOspfInterfaceSettingInstance.get(ospfInterfaceSettingEntry.getKey()) == null && ospfInterfaceSettingEntry.getValue() != null)) {
                             if (!ospfWarningStatement.contains(otherethernetSetting.getConfig().getName() + "でvlan" + ospfInterfaceSettingEntry.getKey() + "に対応するOspfInterfaceSettingが設定されていません")) {
-                                ospfWarningStatement.add(otherethernetSetting.getConfig().getName() + "でvlan" + ospfInterfaceSettingEntry.getKey() + "に対応するOspfInterfaceSettingが設定されていません");
+                                String message = otherethernetSetting.getConfig().getName() + "でvlan" + ospfInterfaceSettingEntry.getKey() + "に対応するOspfInterfaceSettingが設定されていません";
+                                errorInfos.add(new ErrorInfo(message, false, "指定したVLANに対応するOspfInterfaceSettingの不足",mapOf(otherethernetSetting.getId(), null) ));//JSONを作るための処理
+                                ospfWarningStatement.add(message);
                             }
                             try {
                                 changeColor(otherethernetSetting, orangered);
@@ -1882,6 +2074,8 @@ public static void stpCheck(ArrayList<ClassElement> instances,ArrayList<ArrayLis
                             break;
                         } else if ((otherOspfInterfaceSettingInstance.get(ospfInterfaceSettingEntry.getKey()) != null && ospfInterfaceSettingEntry.getValue() == null)) {
                             if (!ospfWarningStatement.contains(ethernetSetting.getConfig().getName() + "でvlan" + ospfInterfaceSettingEntry.getKey() + "に対応するOspfInterfaceSettingが設定されていません")) {
+                                String message = ethernetSetting.getConfig().getName() + "でvlan" + ospfInterfaceSettingEntry.getKey() + "に対応するOspfInterfaceSettingが設定されていません";
+                                errorInfos.add(new ErrorInfo(message, false, "指定したVLANに対応するOspfInterfaceSettingの不足",mapOf(ethernetSetting.getId(), null) ));//JSONを作るための処理
                                 ospfWarningStatement.add(ethernetSetting.getConfig().getName() + "でvlan" + ospfInterfaceSettingEntry.getKey() + "に対応するOspfInterfaceSettingが設定されていません");
                             }
                             try {
@@ -1906,7 +2100,13 @@ public static void stpCheck(ArrayList<ClassElement> instances,ArrayList<ArrayLis
 //                            System.out.println(ospfInterfaceSetting.getHelloInterval());
 //                            System.out.println(otherOspfInterfaceSetting.getHelloInterval());
                             if (!ospfWarningStatement.contains(ospfInterfaceSetting.getName() + "と" + otherOspfInterfaceSetting.getName() + "のhelloIntervalが一致していません") && !ospfWarningStatement.contains(otherOspfInterfaceSetting.getName() + "と" + ospfInterfaceSetting.getName() + "のhelloIntervalが一致していません")) {
-                                ospfWarningStatement.add(ospfInterfaceSetting.getName() + "と" + otherOspfInterfaceSetting.getName() + "のhelloIntervalが一致していません");
+                                Map<String,String> ins = new HashMap<>();
+                                ins.put(ospfInterfaceSetting.getId(),"helloInterval");
+                                ins.put(otherOspfInterfaceSetting.getId(),"helloInterval");
+
+                                String message = ospfInterfaceSetting.getName() + "と" + otherOspfInterfaceSetting.getName() + "のhelloIntervalが一致していません";
+                                errorInfos.add(new ErrorInfo(message, false, "helloIntervalの不一致",ins));//JSONを作るための処理
+                                ospfWarningStatement.add(message);
                             }
                             try {
                                 changeColor(ospfInterfaceSetting, orangered);
@@ -1919,6 +2119,13 @@ public static void stpCheck(ArrayList<ClassElement> instances,ArrayList<ArrayLis
 //                            System.out.println(ospfInterfaceSetting.getName() + "と" + otherOspfInterfaceSetting.getName());
 //                            System.out.println(otherOspfInterfaceSetting.getName()+ "と" + ospfInterfaceSetting.getName() +"のdeadintervalが一致していません");
                             if ((!ospfWarningStatement.contains(ospfInterfaceSetting.getName() + "と" + otherOspfInterfaceSetting.getName() + "のdeadintervalが一致していません")) && (!ospfWarningStatement.contains(otherOspfInterfaceSetting.getName() + "と" + ospfInterfaceSetting.getName() + "のdeadintervalが一致していません"))) {
+                                Map<String,String> ins = new HashMap<>();
+                                ins.put(ospfInterfaceSetting.getId(),"");
+                                ins.put(otherOspfInterfaceSetting.getId(),"");
+
+                                String message = ospfInterfaceSetting.getName() + "と" + otherOspfInterfaceSetting.getName() + "のdeadIntervalが一致していません";
+                                errorInfos.add(new ErrorInfo(message, false, "deadIntervalの不一致",ins));//JSONを作るための処理
+
                                 ospfWarningStatement.add(ospfInterfaceSetting.getName() + "と" + otherOspfInterfaceSetting.getName() + "のdeadIntervalが一致していません");
                             }
                             try {
@@ -1932,7 +2139,13 @@ public static void stpCheck(ArrayList<ClassElement> instances,ArrayList<ArrayLis
                         //ospfnetworktypeのミスマッチ
                         if (!ospfInterfaceSetting.getOspfNetworkMode().equals(otherOspfInterfaceSetting.getOspfNetworkMode())) {
                             if (!ospfWarningStatement.contains(ospfInterfaceSetting.getName() + "と" + otherOspfInterfaceSetting.getName() + "のospfNetworkModeが一致していません") && !ospfWarningStatement.contains(otherOspfInterfaceSetting.getName() + "と" + ospfInterfaceSetting.getName() + "のospfNetworkModeが一致していません")) {
-                                ospfWarningStatement.add(ospfInterfaceSetting.getName() + "と" + otherOspfInterfaceSetting.getName() + "のspfNetworkModeが一致していません");
+                                Map<String,String> ins = new HashMap<>();
+                                ins.put(ospfInterfaceSetting.getId(),"spfNetworkMode");
+                                ins.put(otherOspfInterfaceSetting.getId(),"spfNetworkMode");
+
+                                String message = ospfInterfaceSetting.getName() + "と" + otherOspfInterfaceSetting.getName() + "のspfNetworkModeが一致していません";
+                                errorInfos.add(new ErrorInfo(message, false, "",ins));//JSONを作るための処理
+                                ospfWarningStatement.add(message);
                             }
                             try {
                                 changeColor(ospfInterfaceSetting, orangered);
@@ -1946,7 +2159,15 @@ public static void stpCheck(ArrayList<ClassElement> instances,ArrayList<ArrayLis
                         //stubのミスマッチ
                         if (!ospfInterfaceSetting.getStub().equals(otherOspfInterfaceSetting.getStub())) {
                             if (!ospfWarningStatement.contains(ospfInterfaceSetting.getName() + "と" + otherOspfInterfaceSetting.getName() + "のstubが一致していません") && !ospfWarningStatement.contains(otherOspfInterfaceSetting.getName() + "と" + ospfInterfaceSetting.getName() + "のstubが一致していません")) {
-                                ospfWarningStatement.add(ospfInterfaceSetting.getName() + "と" + otherOspfInterfaceSetting.getName() + "のstubが一致していません");
+
+                                Map<String,String> ins = new HashMap<>();
+                                ins.put(ospfInterfaceSetting.getId(),"stub");
+                                ins.put(otherOspfInterfaceSetting.getId(),"stub");
+
+                                String message = ospfInterfaceSetting.getName() + "と" + otherOspfInterfaceSetting.getName() + "のstubが一致していません";
+                                errorInfos.add(new ErrorInfo(message, false, "",ins));//JSONを作るための処理
+
+                                ospfWarningStatement.add(message);
                             }
                             try {
                                 changeColor(ospfInterfaceSetting, orangered);
@@ -2622,8 +2843,12 @@ public static void stpCheck(ArrayList<ClassElement> instances,ArrayList<ArrayLis
         }
         return currentOspfInterfaceSetting;
             }
-
-
+///JSON形式のためのメソッド（検証結果を配列に変換する）
+    public static Map<String, String> mapOf(String key, String value) {//MAPを一行で作るための処理
+        Map<String, String> map = new HashMap<>();
+        map.put(key, value);
+        return map;
+    }
 
 
 }

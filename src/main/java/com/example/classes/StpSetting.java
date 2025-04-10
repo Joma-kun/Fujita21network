@@ -1,11 +1,12 @@
 package com.example.classes;
 
 import com.example.element.ClassElement;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class StpSetting extends ClassElement {
-
+    @JsonIgnore
     private int bridgePriority = -1;
-
+    @JsonIgnore
     private int vlan = -1;
 
     public int getBridgePriority() {
@@ -53,11 +54,11 @@ public class StpSetting extends ClassElement {
         }
         this.config = config;
     }
-
+    @JsonIgnore
     private String mode;
-
+    @JsonIgnore
     private String macAddress;
-
+    @JsonIgnore
     private Config config;
 
 }

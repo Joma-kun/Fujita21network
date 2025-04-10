@@ -1,29 +1,30 @@
 package com.example.classes;
 
 import com.example.element.ClassElement;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class IpRoute extends ClassElement {
 
-    private String network;
+    private String ipAddress;
 
-    private String addressPrefix;
+    private String subnetMask;
 
     private String netHopAddress;
 
-    public String getNetwork() {
-        return network;
+    public String getIpAddress() {
+        return ipAddress;
     }
 
-    public void setNetwork(String network) {
-        this.network = network;
+    public void setIpAddress(String ipAddress) {
+        this.ipAddress = ipAddress;
     }
 
-    public String getAddressPrefix() {
-        return addressPrefix;
+    public String getSubnetMask() {
+        return subnetMask;
     }
 
-    public void setAddressPrefix(String addressPrefix) {
-        this.addressPrefix = addressPrefix;
+    public void setSubnetMask(String subnetMask) {
+        this.subnetMask = subnetMask;
     }
 
     public String getNetHopAddress() {
@@ -47,7 +48,7 @@ public class IpRoute extends ClassElement {
         }
         this.config = config;
     }
-
+    @JsonIgnore
     private Config config;
 
 }

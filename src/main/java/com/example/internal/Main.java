@@ -61,6 +61,7 @@ public class Main extends JPanel
     private java.awt.event.KeyEvent KeyEvent;
 
 
+
     public Main() throws Exception {
         initComponents();//最初に行われる処理
     }
@@ -186,8 +187,8 @@ public class Main extends JPanel
 
             //linkの情報を変換する
             ArrayList<LinkElement> links = ChangeClassInformation.changeLinkInformation(presentations, instances);
-            //設計者の意図ファイルの読み込み
-//            ObjectMapper objectMapper = new ObjectMapper();
+            //JSON形式に検証結果を反映するための処理
+            ArrayList<ErrorInfo> errorInfos = new ArrayList<>();//error情報をまとめたリスト
 
 
 
@@ -278,14 +279,15 @@ public class Main extends JPanel
                         presentation.setProperty(PresentationPropertyConstants.Key.LINE_COLOR, "#000000");
                     }
                 }
+                Check check = new Check(errorInfos);//コンストラクタ
                 beforeInstanceColor = recordBeforeInstanceColar(presentations);
                 //ここまで（astahの色戻し処理）
                 //AttributeInntegrityChecker属性の値の解析
-//                AttributeIntegrityChecker attributeIntegrityChecker = new AttributeIntegrityChecker(instances, textarea);
-//                attributeIntegrityChecker.AllAttributeIntegrityCheck();
+                AttributeIntegrityChecker attributeIntegrityChecker = new AttributeIntegrityChecker(instances, textarea);
+                attributeIntegrityChecker.AllAttributeIntegrityCheck(errorInfos);
 
                 for(ClassElement eInstance : errorInstances){
-                    Check.changeColor(eInstance,"#ff0000");
+                    check.changeColor(eInstance,"#ff0000");
                 }
 
                 //データベース接続
@@ -302,7 +304,10 @@ public class Main extends JPanel
 
                 if(formatErrorStatements.size()==0 || input.equals("no") ) {
                     ;
+
                     System.out.println("check開始");
+                    CreateFile.Createfile(instances);
+                    CreateFile.CreateLinkfile(instances);
                     //ここからチェック開始
                     ArrayList<String> errorStatement = new ArrayList<>();
                     ArrayList<String> warningStatement = new ArrayList<>();
@@ -310,36 +315,36 @@ public class Main extends JPanel
 //                    checkBoxStatus.forEach((key, value) -> {
 //                        System.out.println(key + ": " + (value ? "Checked" : "Unchecked"));
 //                    });
-                    Check.oposingVlancheck(instances, textarea, errorStatement, warningStatement);
+                    check.oposingVlancheck(instances, textarea, errorStatement, warningStatement);
                    System.out.println("oposingVlancheck");
 
-                   Check.conectedConfigCheck(instances, textarea, errorStatement, warningStatement);
+                   check.conectedConfigCheck(instances, textarea, errorStatement, warningStatement);
                     //astahの必須項目のチェック　EthernetSettingにLinkとConcigがあるべきなど
-//                    Check.asta(instances, textarea, errorStatement, warningStatement);
+//                   Check.asta(instances, textarea, errorStatement, warningStatement);
                     //関連の多重度のチェック
-                    Check.nodeCheck( instances, links, errorStatement);
+                    check.nodeCheck( instances, links, errorStatement);
                     System.out.println("nodeCheck");
                     //関連がないもののチェック
-                    Check.notLinkCheck(textarea, instances, links, errorStatement);
+                    check.notLinkCheck(textarea, instances, links, errorStatement);
                     //欠如などのチェック
-                    Check.nodeKetujoCheck(instances,textarea,errorStatement,warningStatement);
+                    check.nodeKetujoCheck(instances,textarea,errorStatement,warningStatement);
                     System.out.println("notLinkCheck");
                     if (errorStatement.size() == 0) {
 
                         //ipアドレス重複チェック
-                        Check.ipAddressDuplicationCheck(textarea, instances, errorStatement, warningStatement);
+                        check.ipAddressDuplicationCheck(textarea, instances, errorStatement, warningStatement);
                     System.out.println("ipAddressDuplicationCheck");
                         //Vlan重複チェック
-                        Check.vlanDuplicationCheck(textarea, instances, warningStatement);
+//                        Check.vlanDuplicationCheck(textarea, instances, warningStatement);
                     System.out.println("vlanDuplicationCheck");
                         //nativeVLANが一致するかどうかのチェック
-                        Check.nativeVlanCheck(instances, textarea, errorStatement, warningStatement);
+                        check.nativeVlanCheck(instances, textarea, errorStatement, warningStatement);
                     System.out.println("nativeVlanCheck");
 
 
-                        Check.osfpCheck(instances, textarea, errorStatement, warningStatement);
+//                       Check.osfpCheck(instances, textarea, errorStatement, warningStatement);
                     System.out.println("osfpCheck");
-//                    Check.ospfIntentionCheck(instances,ospfjson,textarea,errorStatement,warningStatement);
+
 
 
 
@@ -371,6 +376,10 @@ public class Main extends JPanel
 
                 }
                     textarea.append("check終了");
+                System.out.println("createfile");
+                System.out.println(errorInfos);
+                CreateFile.CreateCheckFile(errorInfos);
+
 
 
                 transactionManager.endTransaction();//トランザクションの終了
@@ -391,6 +400,7 @@ public class Main extends JPanel
         }
         textarea.setEditable(false);//テキストエリアを編集不可能にする
         JScrollPane pane = new JScrollPane(textarea);//スクロールできるようにして型変換も行う
+
         return pane;
     }
 

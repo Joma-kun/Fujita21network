@@ -1,6 +1,7 @@
 package com.example.classes;
 
 import com.example.element.ClassElement;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class LinkableElement extends ClassElement {
 
@@ -18,7 +19,7 @@ public class LinkableElement extends ClassElement {
         this.link = link;
     }
 
-
+    @JsonIgnore
     private Link link;
 
 

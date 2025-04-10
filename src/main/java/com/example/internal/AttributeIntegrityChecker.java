@@ -7,6 +7,7 @@ import com.example.element.ClassElement;
 
 
 import java.awt.*;
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -77,11 +78,11 @@ public class AttributeIntegrityChecker {//構文エラーをチェックする�
 
     }
 
-    public void AllAttributeIntegrityCheck() {//属性の構文チェック　クラスごと
+    public void AllAttributeIntegrityCheck(ArrayList<ErrorInfo> errorInfos) {//属性の構文チェック　クラスごと
         for (ClassElement instance : instances) {
             if (instance instanceof EthernetSetting) {
                 try {
-                    ethernetSettingCheck((EthernetSetting) instance, formatErrorStatements);
+                    ethernetSettingCheck((EthernetSetting) instance, formatErrorStatements,errorInfos);
                 } catch (InvalidEditingException e) {
                     throw new RuntimeException(e);
                 }
@@ -126,6 +127,7 @@ public class AttributeIntegrityChecker {//構文エラーをチェックする�
                 stackCheck((Stack) instance,  formatErrorStatements);
             }
         }
+        CreateFile.CreateCheckFile(errorInfos);
 
         for (String formatErrorstatement : formatErrorStatements) {
             textArea.append(formatErrorstatement + "\n");
@@ -135,12 +137,21 @@ public class AttributeIntegrityChecker {//構文エラーをチェックする�
     }
 
 
+    private static Map<String, String> mapOf(String key, String value) {//MAPを一行で作るための処理
+        Map<String, String> map = new HashMap<>();
+        map.put(key, value);
+        return map;
+    }
+    public static void ethernetSettingCheck(EthernetSetting ethernetSetting,ArrayList<String> formatErrorStatements,ArrayList<ErrorInfo> errorInfos) throws InvalidEditingException {
 
-    public static void ethernetSettingCheck(EthernetSetting ethernetSetting,ArrayList<String> formatErrorStatements) throws InvalidEditingException {
         if (ethernetSetting.getStack() != -1) {//int値は初期値-1にしてある。入力がなかったとき用
             Matcher stackM = twoDigits.matcher(String.valueOf(ethernetSetting.getStack()));
             if (!stackM.matches()) {//半角数値二桁のみ
-                formatErrorStatements.add(ethernetSetting.getName() + "のstackの値は無効です。1桁または2桁の整数を入力してください");//エラー文
+                String message = ethernetSetting.getName() + "のstackの値は無効です。1桁または2桁の整数を入力してください";
+                formatErrorStatements.add(message);//エラー文
+                errorInfos.add(new ErrorInfo(message, true, "構文エラー",mapOf(ethernetSetting.getId(), "stack") ));//JSONを作るための処理
+
+
                 Check.changeColor(ethernetSetting,red);
             }
         }
@@ -148,7 +159,13 @@ public class AttributeIntegrityChecker {//構文エラーをチェックする�
             Matcher slotM = twoDigits.matcher(String.valueOf(ethernetSetting.getSlot()));
 
             if (!slotM.matches()) {
+                System.out.println("koko");
+                String message=ethernetSetting.getName() + "のslotの値は無効です。1桁または2桁の整数を入力してください";
+                formatErrorStatements.add(message);//エラー文
+                errorInfos.add(new ErrorInfo(message, true, "構文エラー",mapOf(ethernetSetting.getId(), "slot") ));//JSONを作るための処理
+
                 formatErrorStatements.add(ethernetSetting.getName() + "のslotの値は無効です。1桁または2桁の整数を入力してください");
+
                 Check.changeColor(ethernetSetting,red);
             }
         }
@@ -399,14 +416,14 @@ public class AttributeIntegrityChecker {//構文エラーをチェックする�
     }
 
     public static void ipRouteCheck(IpRoute ipRoute, ArrayList<String> formatErrorStatements) {
-        if (!ipRoute.getNetwork().isEmpty()) {
-            Matcher networkM = ipAddress.matcher(ipRoute.getNetwork());
+        if (!ipRoute.getIpAddress().isEmpty()) {
+            Matcher networkM = ipAddress.matcher(ipRoute.getIpAddress());
             if (!networkM.matches()) {
                 formatErrorStatements.add(ipRoute.getName() + "のnetworkの値は無効です。有効なIPアドレス形式で入力してください");
             }
         }
-        if (!ipRoute.getAddressPrefix().isEmpty()) {
-            Matcher addressPrefixM = ipAddress.matcher(ipRoute.getAddressPrefix());
+        if (!ipRoute.getSubnetMask().isEmpty()) {
+            Matcher addressPrefixM = ipAddress.matcher(ipRoute.getSubnetMask());
             if (!addressPrefixM.matches()) {
                 formatErrorStatements.add(ipRoute.getName() + "のaddressPrefixの値は無効です。有効なサブネットマスク形式で入力してください");
             }
@@ -458,7 +475,7 @@ public class AttributeIntegrityChecker {//構文エラーをチェックする�
         }
 
         if (!ospfInterfaceSetting.getStub().isEmpty()) {
-            if (!(ospfInterfaceSetting.getStub().equals("stub") || ospfInterfaceSetting.getStub().equals("stub no-summary") ||ospfInterfaceSetting.getStub().equals("nssa") ||ospfInterfaceSetting.getStub().equals("nssa no-smmary")  || ospfInterfaceSetting.getStub().isEmpty())) {
+            if (!(ospfInterfaceSetting.getStub().equals("stub") || ospfInterfaceSetting.getStub().equals("stub no-summary") ||ospfInterfaceSetting.getStub().equals("nssa") ||ospfInterfaceSetting.getStub().equals("nssa no-smmary")  || ospfInterfaceSetting.getStub().equals("normal")  ||ospfInterfaceSetting.getStub().isEmpty())) {
                 formatErrorStatements.add(ospfInterfaceSetting.getName() + "のstubの値は無効です。'stub','stub no-summary','nssa','nssa no-smmary'のいずれかを入力してください");
 
             }

@@ -1,6 +1,7 @@
 package com.example.classes;
 
 import com.example.element.ClassElement;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.ArrayList;
 
@@ -30,7 +31,7 @@ public class Link extends ClassElement {
         return null;
     }
 
-
+    @JsonIgnore
     private ArrayList<LinkableElement> linkableElements = new ArrayList<>();//リンククラスの両端にあるインスタンス（Linkableクラス）
 
     public void setLinkableElement(LinkableElement linkableElement) {

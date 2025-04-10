@@ -1109,8 +1109,8 @@ public class ChangeClassInformation {
                     for (int slotnumber = 0; slotnumber < slots.size(); slotnumber++) {
                         String iprName = slots.get(slotnumber).getAttribute();
 
-                            if (iprName.equals("network")) {
-                                ((IpRoute) instance).setNetwork(slots.get(slotnumber).getValue());
+                            if (iprName.equals("ipAddress")) {
+                                ((IpRoute) instance).setIpAddress(slots.get(slotnumber).getValue());
                                 if(!slots.get(slotnumber).getValue().isEmpty()) {
                                     if(zenkakuCheck(slots.get(slotnumber).getValue())){
                                         formatErrorStatements.add(instance.getName() + "のnetworkの値は無効です。入力に全角が含まれています");
@@ -1129,8 +1129,8 @@ public class ChangeClassInformation {
                                     }
                                 }
                             }
-                            if (iprName.equals("addressPrefix")) {
-                                ((IpRoute) instance).setAddressPrefix(slots.get(slotnumber).getValue());
+                            if (iprName.equals("subnetMask")) {
+                                ((IpRoute) instance).setSubnetMask(slots.get(slotnumber).getValue());
                                 if(!slots.get(slotnumber).getValue().isEmpty()) {
                                     if(zenkakuCheck(slots.get(slotnumber).getValue())){
                                         formatErrorStatements.add(instance.getName() + "のaddressPrefixの値は無効です。入力に全角が含まれています");
