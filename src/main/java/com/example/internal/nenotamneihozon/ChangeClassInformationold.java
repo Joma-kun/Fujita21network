@@ -1,4 +1,4 @@
-package com.example.internal;
+package com.example.internal.nenotamneihozon;
 
 import com.change_vision.jude.api.inf.exception.InvalidEditingException;
 import com.change_vision.jude.api.inf.exception.InvalidUsingException;
@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 
 import static java.lang.Integer.parseInt;
 
-public class ChangeClassInformation {
+public class ChangeClassInformationold {
     //変換と同時に構文のチェックを行う　エラーが出ても格納は行う．
     //正規表現
     static Pattern twoDigits = Pattern.compile("^([0-9]{1,2})$");//二桁の数字
@@ -1673,7 +1673,7 @@ public class ChangeClassInformation {
                                 }
                             }
                             if (vlaName.equals("name")) {
-                                ((Vlan) instance).setNamed(slots.get(slotnumber).getValue());
+                                ((Vlan) instance).setVlanName(slots.get(slotnumber).getValue());
                                 if (!slots.get(slotnumber).getValue().isEmpty()) {
                                     if(!slots.get(slotnumber).getValue().isEmpty()) {
                                         if(zenkakuCheck(slots.get(slotnumber).getValue())){

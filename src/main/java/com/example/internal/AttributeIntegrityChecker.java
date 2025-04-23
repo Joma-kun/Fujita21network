@@ -7,7 +7,6 @@ import com.example.element.ClassElement;
 
 
 import java.awt.*;
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,42 +42,31 @@ public class AttributeIntegrityChecker {//構文エラーをチェックする�
     static String red = "#ff0000";//エラーの色　赤
     static String orangered = "#ff7f50";//警告の色　オレンジ
 
-
-//104と108行目をオンにする
-    /*フォーマットチェックの手順
-     *astahから値を取り出す(全てString型)→それぞれのクラス、属性に変換する(この時点で型が違う物例えばint型やboolean型などを検査する[changeclassinformationクラスで行う])
-     * →AttributeCheckerクラスで正規表現や文字列一致のチェックを行う
-     */
-
-
-
-
-    ArrayList<String> formatErrorStatements;//フォーマットのエラー文
+    ArrayList<String> formatErrorStatements;//構文・字句解析の検証結果のエラー文のリスト
     ArrayList<ClassElement> instances;//モデルにある全インスタンスを格納するリスト
     TextArea textArea;//出力する場所
+    ArrayList<ErrorInfo> errorInfos ;//JSON形式に変換する際にエラー情報を格納するリスト
 
     //正規表現
     static Pattern twoDigits = Pattern.compile("^([0-9]{1,2})$");//二桁の数字
     static Pattern fourDigits = Pattern.compile("^([0-9]{1,4})$");//四桁の数字
     static Pattern fiveDigits = Pattern.compile("^([0-9]{1,5})$");//5桁の数字
     static Pattern character = Pattern.compile("\\S+");//任意の文字　名前など
-
     static Pattern space = Pattern.compile(" "); //半角スペース
     static Pattern ipAddress = Pattern.compile("^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$");//IPアドレス
-
     static Pattern linkpattern = Pattern.compile("^\\S+ \\S+ and \\S+ \\S+");//Linkクラスの形式
+    static Pattern alloedVlanpattern = Pattern.compile("^\\d+(-\\d+)?(,\\d+(-\\d+)?)*$");
 //https://www.cisco.com/c/ja_jp/td/docs/wireless/controller/ewc/17-7/config-guide/ewc_cg_17_7/ipv4_acls.html#
     //を参考に
- //   ArrayList<String> protocols = ["ahp","esp","eigrp","gre","icmp","igmp","ip","ipinip","nos","ospf","pcp","pim","tcp","udp"]
-
-    public AttributeIntegrityChecker(ArrayList<ClassElement> instances, TextArea textArea) {//コンストラクタ
+    public AttributeIntegrityChecker(ArrayList<ClassElement> instances, TextArea textArea,ArrayList<ErrorInfo> errorInfos) {//コンストラクタ
         this.instances = instances;
         this.textArea = textArea;
         formatErrorStatements = new ArrayList<>();
+        this.errorInfos = errorInfos;
 
     }
 
-    public void AllAttributeIntegrityCheck(ArrayList<ErrorInfo> errorInfos) {//属性の構文チェック　クラスごと
+    public void AllAttributeIntegrityCheck() {//属性の構文チェック　クラスごと
         for (ClassElement instance : instances) {
             if (instance instanceof EthernetSetting) {
                 try {
@@ -127,17 +115,12 @@ public class AttributeIntegrityChecker {//構文エラーをチェックする�
                 stackCheck((Stack) instance,  formatErrorStatements);
             }
         }
-        CreateFile.CreateCheckFile(errorInfos);
-
         for (String formatErrorstatement : formatErrorStatements) {
             textArea.append(formatErrorstatement + "\n");
         }
-
-
     }
 
-
-    private static Map<String, String> mapOf(String key, String value) {//MAPを一行で作るための処理
+    private static Map<String, String> mapOf(String key, String value) {//MAPを一行で作るための処理、JSONの出力用
         Map<String, String> map = new HashMap<>();
         map.put(key, value);
         return map;
@@ -149,9 +132,7 @@ public class AttributeIntegrityChecker {//構文エラーをチェックする�
             if (!stackM.matches()) {//半角数値二桁のみ
                 String message = ethernetSetting.getName() + "のstackの値は無効です。1桁または2桁の整数を入力してください";
                 formatErrorStatements.add(message);//エラー文
-                errorInfos.add(new ErrorInfo(message, true, "構文エラー",mapOf(ethernetSetting.getId(), "stack") ));//JSONを作るための処理
-
-
+                errorInfos.add(new ErrorInfo( true, "構文エラー",mapOf(ethernetSetting.getId(), "stack") ));//JSONを作るための処理
                 Check.changeColor(ethernetSetting,red);
             }
         }
@@ -162,7 +143,7 @@ public class AttributeIntegrityChecker {//構文エラーをチェックする�
                 System.out.println("koko");
                 String message=ethernetSetting.getName() + "のslotの値は無効です。1桁または2桁の整数を入力してください";
                 formatErrorStatements.add(message);//エラー文
-                errorInfos.add(new ErrorInfo(message, true, "構文エラー",mapOf(ethernetSetting.getId(), "slot") ));//JSONを作るための処理
+                errorInfos.add(new ErrorInfo(true, "構文エラー",mapOf(ethernetSetting.getId(), "slot") ));//JSONを作るための処理
 
                 formatErrorStatements.add(ethernetSetting.getName() + "のslotの値は無効です。1桁または2桁の整数を入力してください");
 
@@ -251,6 +232,7 @@ public class AttributeIntegrityChecker {//構文エラーをチェックする�
                 Check.changeColor(ethernetSetting,red);
             }
         }
+
         //「true」「false」「allowedVlan」はChangeClassInformationでチェックし，エラー文をClassElementのbooleanErrorStatementにいれてそれをここで取り出す
         if (ethernetSetting.getAttributeErrorStatement().size() != 0) {
             formatErrorStatements.addAll(ethernetSetting.getAttributeErrorStatement());
@@ -520,8 +502,8 @@ public class AttributeIntegrityChecker {//構文エラーをチェックする�
                 formatErrorStatements.add(vlan.getName() + "のnumの値は無効です。4桁までの整数を入力してください");
             }
         }
-        if (!vlan.getNamd().isEmpty()) {
-            Matcher nameM = character.matcher(vlan.getNamd());
+        if (!vlan.getVlanName().isEmpty()) {
+            Matcher nameM = character.matcher(vlan.getVlanName());
             if (!nameM.matches()) {
                 formatErrorStatements.add(vlan.getName() + "のnameの値は無効です。正しい形式で入力してください");
             }

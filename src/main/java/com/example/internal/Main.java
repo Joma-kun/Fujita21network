@@ -15,23 +15,12 @@ import com.change_vision.jude.api.inf.project.ProjectEvent;
 import com.change_vision.jude.api.inf.project.ProjectEventListener;
 import com.change_vision.jude.api.inf.ui.IPluginExtraTabView;
 import com.change_vision.jude.api.inf.ui.ISelectionListener;
-import com.example.classes.Config;
-import com.example.classes.EthernetSetting;
-import com.example.classes.OspfInterfaceSetting;
-import com.example.data.OspfData;
 import com.example.element.ClassElement;
 import com.example.element.LinkElement;
 //import org.neo4j.driver.*;
 
-import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Paths;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import static com.example.internal.ChangeClassInformation.isFullWidth;
+import com.example.internal.converter.ChangeClassInformation;
+import com.example.internal.converter.SetOthersInformation;
 //import static org.neo4j.driver.Values.parameters;
 
 
@@ -39,11 +28,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.nio.file.StandardWatchEventKinds;
-import java.rmi.ConnectIOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 public class Main extends JPanel
@@ -182,11 +168,12 @@ public class Main extends JPanel
             ArrayList<String> formatErrorStatements = new ArrayList<>();
             ArrayList<ClassElement> errorInstances = new ArrayList<>();
 
-            instances = ChangeClassInformation.changeAllElement(presentations,textarea,formatErrorStatements,errorInstances);
+            instances = ChangeClassInformation.changeAllElement(presentations,projectAccessor);
+
 
 
             //linkの情報を変換する
-            ArrayList<LinkElement> links = ChangeClassInformation.changeLinkInformation(presentations, instances);
+            ArrayList<LinkElement> links = SetOthersInformation.changeLinkInformation(presentations, instances);
             //JSON形式に検証結果を反映するための処理
             ArrayList<ErrorInfo> errorInfos = new ArrayList<>();//error情報をまとめたリスト
 
@@ -283,8 +270,8 @@ public class Main extends JPanel
                 beforeInstanceColor = recordBeforeInstanceColar(presentations);
                 //ここまで（astahの色戻し処理）
                 //AttributeInntegrityChecker属性の値の解析
-                AttributeIntegrityChecker attributeIntegrityChecker = new AttributeIntegrityChecker(instances, textarea);
-                attributeIntegrityChecker.AllAttributeIntegrityCheck(errorInfos);
+                AttributeIntegrityChecker attributeIntegrityChecker = new AttributeIntegrityChecker(instances, textarea,errorInfos);
+                attributeIntegrityChecker.AllAttributeIntegrityCheck();
 
                 for(ClassElement eInstance : errorInstances){
                     check.changeColor(eInstance,"#ff0000");

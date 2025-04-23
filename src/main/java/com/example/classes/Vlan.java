@@ -18,12 +18,12 @@ public class Vlan extends ClassElement {
     }
 
 
-    public String getNamd() {
+    public String getVlanName() {
         return name;
     }
 
 
-    public void setNamed(String name) {
+    public void setVlanName(String name) {
         this.name = name;
     }
 

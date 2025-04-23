@@ -33,7 +33,7 @@ public class ClassElement {
         this.id = id;
     }
 
-    private String id = this.toString();
+    private String id;
     @JsonIgnore
     private IPresentation presentation;//astahのpresentation情報と結びつける
     @JsonIgnore

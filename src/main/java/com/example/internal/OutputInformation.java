@@ -15,13 +15,14 @@ import com.change_vision.jude.api.inf.project.ProjectAccessor;
 import com.example.classes.*;
 import com.example.element.ClassElement;
 import com.example.element.LinkElement;
+import com.example.internal.converter.ChangeClassInformation;
+import com.example.internal.converter.SetOthersInformation;
+
 
 import javax.swing.*;
-import javax.swing.plaf.synth.SynthTextAreaUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -66,12 +67,12 @@ public class OutputInformation {
             ArrayList<String> formatErrorStatements = new ArrayList<>();
             ArrayList<ClassElement> errorInstances = new ArrayList<>();
             try {
-                instances = ChangeClassInformation.changeAllElement(presentations,textarea,formatErrorStatements,errorInstances);
+                instances = ChangeClassInformation.changeAllElement(presentations,projectAccessor);
             } catch (InvalidEditingException e) {
                 throw new RuntimeException(e);
             }
             //linkの情報を変換する
-            ArrayList<LinkElement> links = ChangeClassInformation.changeLinkInformation(presentations, instances);
+            ArrayList<LinkElement> links = SetOthersInformation.changeLinkInformation(presentations, instances);
 
             try {//モデル編集のためのトランザクション処理
                 transactionManager.beginTransaction();//トランザクションの開始
@@ -170,7 +171,7 @@ public class OutputInformation {
                                 ArrayList<Integer> ports = new ArrayList<>();//VLANが設定されているポートをまとめた物
                                 ArrayList<String> portnames = new ArrayList<>();
                                 int vlanNum = ((Vlan) ins).getNum();//VLAN番号の抽出
-                                String vlanName = ((Vlan) ins).getNamd();//VLANーNAME抽出
+                                String vlanName = ((Vlan) ins).getVlanName();//VLANーNAME抽出
                                 for (ClassElement ethins : instances) {
                                     if (ethins instanceof EthernetSetting) {
                                         if (((EthernetSetting) ethins).getConfig() != null) {
@@ -329,7 +330,7 @@ public class OutputInformation {
                                         }
                                     }
                                     //情報の出力　 vlan1以外
-                                    textarea.append(String.format("%-4s %-14s", vlanN, vlanI.getNamd()));
+                                    textarea.append(String.format("%-4s %-14s", vlanN, vlanI.getVlanName()));
                                     textarea.append(String.format("%-18s", conf.getName()));
                                     textarea.append(String.format("%-12s", " active"));
                                     int count = 0;//カンマの調整のため

@@ -159,21 +159,10 @@ public class EthernetSetting extends LinkableElement {
         this.conectedThing = conectedThing;
     }
 
-    public void setAllowedVlan() {
+    public void setAllowedVlan() {//allowedVlanのセッター
         ArrayList<Integer> numbers = new ArrayList<>();
         ArrayList<Integer> vlanNumbers = new ArrayList<>();
-        if (getAllowdVlanString().isEmpty()) {//入力がない時はすべてのvlanを許可する
-//            Config config = new Config();
-//            config = this.getConfig();
-//            if (config != null) {
-//                ArrayList<Vlan> vlans = config.getVlan();
-//                for (Vlan vlanNumber : vlans) {
-//                    if (!vlanNumbers.contains(vlanNumber.getNum())) {
-//                        vlanNumbers.add(vlanNumber.getNum());
-//                    }
-//                }
-//                this.allowedVlans = vlanNumbers;
-//            }
+        if (getAllowdVlanString().isEmpty()) {//入力がない時はすべてのvlanを許可する。つまりallowedVlanには0～4095までの値が入る
             if(this.getMode().equals("trunk")) {
                 for (int i = 0; i < 4095; i++) {
                     vlanNumbers.add(i);
@@ -191,7 +180,7 @@ public class EthernetSetting extends LinkableElement {
                         numbers.add(i);
                     }
                 } else {
-                    this.setAttributeErrorStatement(this.getName() + "のallowedVlanの値は無効です。正しい形式で入力してください");
+                    this.setAttributeErrorStatement(this.getName() + "のallowedVlanの値は無効です。正しい形式で入力してください");//要編集
                 }
                 for(int num : numbers){
                     if(!vlanNumbers.contains(num)){
@@ -199,39 +188,9 @@ public class EthernetSetting extends LinkableElement {
                     }
                 }
                 this.allowedVlans = vlanNumbers;
-//                Config config = new Config();
-//                config = this.getConfig();
-//                if (config != null) {
-//                    ArrayList<Vlan> vlans = config.getVlan();
-//                    for (Vlan vlanNumber : vlans) {
-//                        if (numbers.contains(vlanNumber.getNum()) && !vlanNumbers.contains(vlanNumber.getNum())) {
-//                            vlanNumbers.add(vlanNumber.getNum());
-//                        }
-//                        if (numbers.contains(1) && !vlanNumbers.contains(1)) {
-//                            vlanNumbers.add(1);
-//                        }
-//                        this.allowedVlans = vlanNumbers;
-//                    }
-//                }
+
             }
         }
-
-
-//		Pattern listNumber = Pattern.compile("\\[(\\d+(,\\d+)*)?\\]");//数字のリスト　[12,14]
-//		Matcher allowedM = listNumber.matcher(allowedVlan);
-//		if(!allowedVlan.isEmpty()){
-//		if(!allowedM.matches()){
-//			setAttributeErrorStatement(this.getName()+"のallowedVlanの値は無効です。正しい形式で入力してください");
-//		}}
-//		if(allowedVlan.length()>2) {
-//			String as =allowedVlan.substring(1, allowedVlan.length() - 1);
-//			String[] spritVlan = as.split(",");
-//			for (String s : spritVlan) {
-//				if (isInt(s)) {
-//					int number = Integer.parseInt(s);
-//					this.allowedVlans.add(number);
-//				}}
-//			}
     }
 
 
