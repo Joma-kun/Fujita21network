@@ -329,7 +329,7 @@ public class Main extends JPanel
                     System.out.println("nativeVlanCheck");
 
 
-//                       Check.osfpCheck(instances, textarea, errorStatement, warningStatement);
+                    Check.osfpCheck(instances, textarea, errorStatement, warningStatement);
                     System.out.println("osfpCheck");
 
 

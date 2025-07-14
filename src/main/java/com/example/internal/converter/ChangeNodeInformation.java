@@ -146,7 +146,7 @@ public class ChangeNodeInformation {
                         ((OspfInterfaceSetting) instance2).setOspfSetting((OspfSetting) instance1);
                     } else if (instance2 instanceof OspfVirtualLink) {
                         ((OspfSetting) instance1).setOspfVirtualLink((OspfVirtualLink) instance2);
-                        ((OspfVirtualLink) instance2).setOspfSetting((OspfSetting) instance2);
+                        ((OspfVirtualLink) instance2).setOspfSetting((OspfSetting) instance1);
                     }
                 }
                 if (instance1 instanceof OspfVirtualLink) {

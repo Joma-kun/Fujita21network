@@ -11,7 +11,7 @@ public class ConverterManager {
     static {
         converters.put("AccessList", new AccessListConverter());
         converters.put("CiscoAccessList", new AccessListConverter()); // 同じ変換器を使う別名
-        converters.put("Clients", new ClietntsConverter());
+        converters.put("Client", new ClietntsConverter());
         converters.put("Config", new ConfigConverter());
         converters.put("EthernetSetting", new EthernetSettingConverter());
         converters.put("EthernetType", new EthernetTypeConverter());
